@@ -1,0 +1,12 @@
+# IDE
+.vscode/
+.idea/
+.cache/
+build/
+compile_commands.json
+
+# BIN
+*.[oa]
+*.exe
+*.out
+*.elf
