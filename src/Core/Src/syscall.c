@@ -16,7 +16,7 @@ __attribute__((weak)) int __io_getchar()
 
 __attribute__((weak)) int __io_putchar(int ch)
 {
-    return USART_Transmit(USART1, (uint8_t *)&ch, 1);
+    return ITM_SendChar(ch);
 }
 
 

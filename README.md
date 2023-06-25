@@ -45,6 +45,14 @@ pip install compiledb
 compiledb make
 ```
 
+### 调试打印
+
+https://wiki.segger.com/J-Link_SWO_Viewer
+
+使用核内ITM即可
+
+`JLinkSWOViewerCL -cpufreq 168000000 -device STM32F407VE`
+
 ### Debug工具
 
 #### ContexM-Debug

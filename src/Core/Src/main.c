@@ -13,7 +13,6 @@
 void SystemInit()
 {
 	RCC_Init();
-	// SysTick_Config(168 * 1000 * 1000 / 1000);
 }
 
 void GpioInit()
