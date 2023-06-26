@@ -17,6 +17,13 @@ void SystemInit()
 
 void GpioInit()
 {
+    GPIO_InitTypeDef config = {0};
+    config.Pin = GPIO_Pin_6;
+    config.Speed = GPIO_SPEED_FREQ_HIGH;
+    config.Mode = GPIO_MODE_OUTPUT_PP;
+    config.Pull = 0;
+    config.Alternate = ;
+
 	// GPIO_InitTypeDef ucGpioConfig[] = {
 	// 	{
 	// 		.GPIO_Pin = GPIO_Pin_9,
