@@ -63,7 +63,7 @@ static void stdout_callback(log_Event *ev)
     // 时间
     // fprintf(ev->udata, "%s ", time_string);
     // 日志等级
-    // fprintf(ev->udata, "%-5s ", level_strings[ev->level]);
+    fprintf(ev->udata, "%-5s ", level_strings[ev->level]);
     // 文件名和行号
     // fprintf(ev->udata, "%s:%d: ", ev->file_name, ev->line);
 #endif
@@ -125,7 +125,6 @@ void log_log(int level, const char *file_name, int line, const char *fmt, ...)
     time_t t = time(NULL);
 
     log_Event ev = {
-        .ap = NULL,
         .fmt = fmt,
         .file_name = file_name,
         .time = localtime(&t),
@@ -133,7 +132,6 @@ void log_log(int level, const char *file_name, int line, const char *fmt, ...)
         .line = line,
         .level = level,
     };
-
     va_start(ev.ap, fmt);
     stdout_callback(&ev);
     va_end(ev.ap);

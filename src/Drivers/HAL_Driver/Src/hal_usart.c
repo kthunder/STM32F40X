@@ -24,3 +24,9 @@ uint32_t USART_Transmit(USART_TypeDef *USARTx, uint8_t *pData, uint16_t nSize)
     }
     return nSize;
 }
+
+// todo
+uint32_t USART_Receive(USART_TypeDef *USARTx, uint8_t *pData, uint16_t nSize)
+{
+    return 0;
+}

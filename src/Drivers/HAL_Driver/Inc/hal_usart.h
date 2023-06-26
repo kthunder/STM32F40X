@@ -11,6 +11,7 @@ extern "C"
     void USART_Init(USART_TypeDef *USARTx);
 
     uint32_t USART_Transmit(USART_TypeDef *USARTx, uint8_t *pData, uint16_t nSize);
+    uint32_t USART_Receive(USART_TypeDef *USARTx, uint8_t *pData, uint16_t nSize);
 
 #ifdef __cplusplus
 }
