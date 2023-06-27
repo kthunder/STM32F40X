@@ -28,7 +28,7 @@ endif
 
 CCFLAGS := -Wall -O0 -g
 CCFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
-CCFLAGS += -ffunction-sections -fdata-sections -fno-common -fmessage-length=0
+CCFLAGS += -ffunction-sections -fdata-sections -fno-common -fmessage-length=0 -fomit-frame-pointer
 CCFLAGS += -D $(BOARD)
 
 CCFLAGS += -I ./src/Core/Inc

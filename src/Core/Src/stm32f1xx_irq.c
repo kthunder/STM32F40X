@@ -35,7 +35,7 @@ void SVC_Handler()
     // GNU GCC 使用r7作为sp的temp使用，并push了r7导致栈帧下移了一帧
     // 之后的栈帧计算都会受到影响导致错误
     // 所以这里使用sp增加4还原栈顶位置
-    __ASM __volatile("pop     {r7}");
+    // __ASM __volatile("pop     {r7}");
 
     __ASM __volatile("TST     LR,#4           \n\
                       ITE     EQ              \n\
