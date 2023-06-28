@@ -3,7 +3,7 @@
 
 void USART_Init(USART_TypeDef *USARTx)
 {
-    USARTx->BRR = 0x171; // 设置波特率
+    USARTx->BRR = 0x2D9; // 设置波特率
 
     SET_BIT(USARTx->CR1, USART_CR1_UE);  // 使能USART
     CLEAR_BIT(USARTx->CR1, USART_CR1_M); // 一个起始位，8个数据位，n个停止位

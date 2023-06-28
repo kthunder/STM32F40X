@@ -17,16 +17,25 @@ void SystemInit()
 
 void GpioInit()
 {
-    GPIO_InitTypeDef config = {0};
+    GPIO_InitTypeDef config = {
+        .pin = GPIO_Pin_6 | GPIO_Pin_7,
+        .mode = GPIO_MODE_OUT,
+        .otype = GPIO_OTYPE_PP,
+        .speed = GPIO_SPEED_FREQ_HIGH,
+        .pupd = GPIO_PUPD_NONE,
+        .af = GPIO_AF_0,
+    };
+    GPIO_InitTypeDef config1 = {
+        .pin = GPIO_Pin_9,
+        .mode = GPIO_MODE_AF_OUT,
+        .otype = GPIO_OTYPE_PP,
+        .speed = GPIO_SPEED_FREQ_HIGH,
+        .pupd = GPIO_PUPD_PULL_UP,
+        .af = GPIO_AF_7,
+    };
 
-    GPIOA->MODER |= GPIO_MODER_MODER6_0;
-    GPIOA->MODER |= GPIO_MODER_MODER7_0;
-    GPIOA->ODR = 0x0;
-
-    GPIOA->MODER |= GPIO_MODER_MODER9_1;
-    GPIOA->AFR[1] != GPIO_AFRH_AFRH1_0;
-    GPIOA->AFR[1] != GPIO_AFRH_AFRH1_1;
-    GPIOA->AFR[1] != GPIO_AFRH_AFRH1_2;
+    GPIO_Init(GPIOA, &config);
+    GPIO_Init(GPIOA, &config1);
 }
 
 void task_heart_beat(void *pvParameters)
