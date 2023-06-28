@@ -65,7 +65,7 @@ $(TARGET_NAME).elf : $(OBJ)
 	$(OBJDUMP) -D $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).dis
 
 $(OBJ) : %.o : % $(HDR)
-	mkdir -p $(shell dirname $(BLD_DIR)/$@)
+	mkdir -p $(dir $(BLD_DIR)/$@)
 	$(CC) -c $< $(CCFLAGS) -o $(BLD_DIR)/$@
 
 all : $(TARGET_NAME).elf
