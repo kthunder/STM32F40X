@@ -12,6 +12,7 @@
 
 void SystemInit()
 {
+    FLASH_Init();
     RCC_Init();
 }
 
