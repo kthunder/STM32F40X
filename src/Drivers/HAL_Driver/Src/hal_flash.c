@@ -16,6 +16,21 @@
 
 #define FLASH_SIZE (FLASH_END - FLASH_BASE + 1)
 
+static const uint32_t sector_addr[] = {
+    0x08000000, // 16K
+    0x08004000, // 16K
+    0x08008000, // 16K
+    0x0800C000, // 16K
+    0x08010000, // 64K
+    0x08020000, // 128K
+    0x08040000, // 128K
+    0x08060000, // 128K
+    // 0x08080000, // 128K
+    // 0x080A0000, // 128K
+    // 0x080C0000, // 128K
+    // 0x080E0000  // 128K
+};
+
 /* private func */
 static inline HAL_StatusTypeDef FLASH_Unlock_Prv()
 {
@@ -109,6 +124,18 @@ static inline void FLASH_Progarm_Word_Prv(uint32_t addr, uint32_t data)
     CLEAR_BIT(FLASH->CR, FLASH_CR_PG);
 }
 
+static inline uint32_t FLASH_Get_Sector_Num(uint32_t addr)
+{
+    for (size_t i = 0; i < (sizeof(sector_addr) / sizeof(uint32_t)) - 1; i++)
+    {
+        if (addr >= sector_addr[i] && addr <= sector_addr[i + 1])
+        {
+            return i;
+        }
+    }
+    return 0xFF;
+}
+
 uint32_t FLASH_Init()
 {
     // set program size
@@ -171,42 +198,37 @@ uint32_t FLASH_Blank_Check(uint32_t addr, uint32_t len)
     return HAL_OK;
 }
 
-// uint32_t FLASH_Erase(uint32_t addr)
-// {
-//     assert_param(addr <= (FLASH_BANK1_END - FLASH_BASE));
+uint32_t FLASH_Erase(uint32_t addr)
+{
+    uint32_t nSector = FLASH_Get_Sector_Num(addr);
+    assert_param(nSector != 0xFF);
 
-//     uint32_t pageStartAddr = addr - addr % 1024;
+    uint32_t sectorStartAddr = sector_addr[nSector];
+    log_info("FLASH_Erase sectorStartAddr:0x%X", sector_addr[nSector] + FLASH_BASE);
 
-//     log_info("FLASH_Erase ADDR:0x%X", addr + FLASH_BASE);
-//     log_info("FLASH_Erase pageStartAddr:0x%X", pageStartAddr + FLASH_BASE);
+    // unlock flash
+    FLASH_Unlock_Prv();
 
-//     // need erase page
-//     if (FLASH_Blank_Check(pageStartAddr, 1024))
-//     {
-//         // unlock flash
-//         FLASH_Unlock_Prv();
+    // write idle
+    FLASH_Waite_Idle_Prv(HAL_MAX_DELAY);
 
-//         // write idle
-//         FLASH_Waite_Idle_Prv(HAL_MAX_DELAY);
+    // start sector erase
+    SET_BIT(FLASH->CR, FLASH_CR_SER);
 
-//         // start page erase
-//         SET_BIT(FLASH->CR, FLASH_CR_PER);
+    // select page
+    WRITE_BIT(FLASH->CR, FLASH_CR_SNB, nSector);
 
-//         // select page
-//         WRITE_REG(FLASH->AR, addr + FLASH_BASE);
+    // start erase
+    SET_BIT(FLASH->CR, FLASH_CR_STRT);
 
-//         // start erase
-//         SET_BIT(FLASH->CR, FLASH_CR_STRT);
+    // write idle
+    FLASH_Waite_Idle_Prv(HAL_MAX_DELAY);
 
-//         // write idle
-//         FLASH_Waite_Idle_Prv(HAL_MAX_DELAY);
+    // over page erase
+    CLEAR_BIT(FLASH->CR, FLASH_CR_SER);
 
-//         // over page erase
-//         CLEAR_BIT(FLASH->CR, FLASH_CR_PER);
+    // lock flash
+    FLASH_Lock_Prv();
 
-//         // lock flash
-//         FLASH_Lock_Prv();
-//     }
-
-//     return FLASH_Blank_Check(pageStartAddr, 1024);
-// }
+    return HAL_OK;
+}
