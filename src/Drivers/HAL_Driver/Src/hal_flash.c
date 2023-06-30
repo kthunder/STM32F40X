@@ -126,13 +126,20 @@ static inline void FLASH_Progarm_Word_Prv(uint32_t addr, uint32_t data)
 
 static inline uint32_t FLASH_Get_Sector_Num(uint32_t addr)
 {
-    for (size_t i = 0; i < (sizeof(sector_addr) / sizeof(uint32_t)) - 1; i++)
+    log_debug(__func__);
+    log_debug("addr : 0x%X", addr);
+    uint32_t realAddr = addr + FLASH_BASE;
+    for (size_t i = 0; i < 7; i++)
     {
-        if (addr >= sector_addr[i] && addr <= sector_addr[i + 1])
+        log_debug("min : 0x%X", sector_addr[i]);
+        log_debug("max : 0x%X", sector_addr[i + 1]);
+        if (realAddr >= sector_addr[i] && addr <= sector_addr[i + 1])
         {
+            log_debug("sector index : 0x%X", i);
             return i;
         }
     }
+
     return 0xFF;
 }
 
@@ -204,7 +211,7 @@ uint32_t FLASH_Erase(uint32_t addr)
     assert_param(nSector != 0xFF);
 
     uint32_t sectorStartAddr = sector_addr[nSector];
-    log_info("FLASH_Erase sectorStartAddr:0x%X", sector_addr[nSector] + FLASH_BASE);
+    log_info("FLASH_Erase sectorStartAddr:0x%X", sector_addr[nSector]);
 
     // unlock flash
     FLASH_Unlock_Prv();
@@ -231,4 +238,17 @@ uint32_t FLASH_Erase(uint32_t addr)
     FLASH_Lock_Prv();
 
     return HAL_OK;
+}
+
+uint32_t FLASH_Unit_Test()
+{
+    assert_param(FLASH_Get_Sector_Num(0x0) == 0);
+    assert_param(FLASH_Get_Sector_Num(0x4000) == 0);
+    assert_param(FLASH_Get_Sector_Num(0x8000) == 0);
+    assert_param(FLASH_Get_Sector_Num(0xC000) == 0);
+    assert_param(FLASH_Get_Sector_Num(0x10000) == 0);
+    assert_param(FLASH_Get_Sector_Num(0x20000) == 0);
+    assert_param(FLASH_Get_Sector_Num(0x40000) == 0);
+    assert_param(FLASH_Get_Sector_Num(0x60000) == 0);
+    return 0;
 }

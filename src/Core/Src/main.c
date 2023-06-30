@@ -63,5 +63,17 @@ int main()
 {
     GpioInit();
     USART_Init(USART1);
-    task_heart_beat(NULL);
+
+    uint32_t res = 0;
+
+    // res = FLASH_Erase(0x10000);
+    // log_info("res = %d", res);
+    // res = FLASH_Blank_Check(0x10000, 0x10000);
+    // log_info("res = %d", res);
+    // task_heart_beat(NULL);
+    FLASH_Unit_Test();
+    while (1)
+    {
+        /* code */
+    }
 }
