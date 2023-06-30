@@ -25,7 +25,7 @@ static const uint32_t sector_addr[] = {
     0x08020000, // 128K
     0x08040000, // 128K
     0x08060000, // 128K
-    // 0x08080000, // 128K
+    0x08080000, // 128K
     // 0x080A0000, // 128K
     // 0x080C0000, // 128K
     // 0x080E0000  // 128K
@@ -107,6 +107,7 @@ static inline HAL_StatusTypeDef FLASH_Validate_Addr_Prv(uint32_t addr, uint32_t 
 
 static inline void FLASH_Progarm_Word_Prv(uint32_t addr, uint32_t data)
 {
+    log_info(__func__);
     assert_param(FLASH_Validate_Addr_Prv(addr, 4, 4) == HAL_OK);
 
     log_info("addr : 0x%X, data %d", addr, data);
@@ -126,25 +127,25 @@ static inline void FLASH_Progarm_Word_Prv(uint32_t addr, uint32_t data)
 
 static inline uint32_t FLASH_Get_Sector_Num(uint32_t addr)
 {
-    log_debug(__func__);
-    log_debug("addr : 0x%X", addr);
     uint32_t realAddr = addr + FLASH_BASE;
-    for (size_t i = 0; i < 7; i++)
+    log_info(__func__);
+    log_info("    addr : 0x%X, realAddr : 0x%X", addr, realAddr);
+    for (size_t i = 0; i < 8; i++)
     {
-        log_debug("min : 0x%X", sector_addr[i]);
-        log_debug("max : 0x%X", sector_addr[i + 1]);
-        if (realAddr >= sector_addr[i] && addr <= sector_addr[i + 1])
+        log_debug("    i : %d, min : 0x%X, max : 0x%X", i, sector_addr[i], sector_addr[i + 1]);
+        if (realAddr >= sector_addr[i] && realAddr < sector_addr[i + 1])
         {
-            log_debug("sector index : 0x%X", i);
+            log_info("    sector index : %d", i);
             return i;
         }
     }
-
+    log_error("    addr out of range : %d");
     return 0xFF;
 }
 
 uint32_t FLASH_Init()
 {
+    log_info(__func__);
     // set program size
     CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE_0);
     SET_BIT(FLASH->CR, FLASH_CR_PSIZE_1);
@@ -161,6 +162,7 @@ uint32_t FLASH_Init()
 /* pubilc func */
 uint32_t FLASH_Write(uint32_t addr, void *ptr, uint32_t len)
 {
+    log_info(__func__);
     assert_param(ptr != NULL);
     assert_param(FLASH_Validate_Addr_Prv(addr, len, 4) == HAL_OK);
 
@@ -186,6 +188,7 @@ uint32_t FLASH_Write(uint32_t addr, void *ptr, uint32_t len)
 
 uint32_t FLASH_Read(uint32_t addr, void *ptr, uint32_t len)
 {
+    log_info(__func__);
     assert_param(ptr != NULL);
     assert_param(FLASH_Validate_Addr_Prv(addr, len, 1) == HAL_OK);
 
@@ -195,6 +198,7 @@ uint32_t FLASH_Read(uint32_t addr, void *ptr, uint32_t len)
 
 uint32_t FLASH_Blank_Check(uint32_t addr, uint32_t len)
 {
+    log_info(__func__);
     assert_param(FLASH_Validate_Addr_Prv(addr, len, 1) == HAL_OK);
 
     for (uint32_t i = 0; i < len; i++)
@@ -207,6 +211,7 @@ uint32_t FLASH_Blank_Check(uint32_t addr, uint32_t len)
 
 uint32_t FLASH_Erase(uint32_t addr)
 {
+    log_info(__func__);
     uint32_t nSector = FLASH_Get_Sector_Num(addr);
     assert_param(nSector != 0xFF);
 
@@ -242,13 +247,14 @@ uint32_t FLASH_Erase(uint32_t addr)
 
 uint32_t FLASH_Unit_Test()
 {
+    log_info(__func__);
     assert_param(FLASH_Get_Sector_Num(0x0) == 0);
-    assert_param(FLASH_Get_Sector_Num(0x4000) == 0);
-    assert_param(FLASH_Get_Sector_Num(0x8000) == 0);
-    assert_param(FLASH_Get_Sector_Num(0xC000) == 0);
-    assert_param(FLASH_Get_Sector_Num(0x10000) == 0);
-    assert_param(FLASH_Get_Sector_Num(0x20000) == 0);
-    assert_param(FLASH_Get_Sector_Num(0x40000) == 0);
-    assert_param(FLASH_Get_Sector_Num(0x60000) == 0);
+    assert_param(FLASH_Get_Sector_Num(0x4000) == 1);
+    assert_param(FLASH_Get_Sector_Num(0x8000) == 2);
+    assert_param(FLASH_Get_Sector_Num(0xC000) == 3);
+    assert_param(FLASH_Get_Sector_Num(0x10000) == 4);
+    assert_param(FLASH_Get_Sector_Num(0x20000) == 5);
+    assert_param(FLASH_Get_Sector_Num(0x40000) == 6);
+    assert_param(FLASH_Get_Sector_Num(0x60000) == 7);
     return 0;
 }
