@@ -39,18 +39,6 @@ void GpioInit()
     GPIO_Init(GPIOA, &config1);
 }
 
-void task_heart_beat(void *pvParameters)
-{
-    GPIO_TogglePin(GPIOA, GPIO_Pin_6);
-    while (1)
-    {
-        log_info("heart beat %d ms", HAL_GetTick());
-        GPIO_TogglePin(GPIOA, GPIO_Pin_6);
-        GPIO_TogglePin(GPIOA, GPIO_Pin_7);
-        delay_ms(1000);
-    }
-}
-
 uint32_t testSVC(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3)
 {
     __NOP();
@@ -65,15 +53,28 @@ int main()
     USART_Init(USART1);
 
     uint32_t res = 0;
+    uint8_t ucTxBuffer[0x10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
+    uint8_t ucRxBuffer[0x10] = {0};
 
-    // res = FLASH_Erase(0x10000);
-    // log_info("res = %d", res);
-    // res = FLASH_Blank_Check(0x10000, 0x10000);
-    // log_info("res = %d", res);
-    // task_heart_beat(NULL);
-    FLASH_Unit_Test();
+    for (size_t addr = 0x10000, len = 0x100; addr < 0x20000; addr += len)
+    {
+        res = FLASH_Blank_Check(addr, len);
+        if (res == 0)
+        {
+            res = FLASH_Write(addr, ucTxBuffer, 0x10);
+            res = FLASH_Read(addr, ucRxBuffer, 0x10);
+            log_info("    ucRxBuffer[0] = %X", ucRxBuffer[0]);
+            log_info("    FLASH_Write res = %d", res);
+            break;
+        }
+    }
+
+    GPIO_TogglePin(GPIOA, GPIO_Pin_6);
     while (1)
     {
-        /* code */
+        log_info("heart beat %d ms", HAL_GetTick());
+        GPIO_TogglePin(GPIOA, GPIO_Pin_6);
+        GPIO_TogglePin(GPIOA, GPIO_Pin_7);
+        delay_ms(1000);
     }
 }

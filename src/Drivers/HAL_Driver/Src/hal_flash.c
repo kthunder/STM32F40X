@@ -145,7 +145,6 @@ static inline uint32_t FLASH_Get_Sector_Num(uint32_t addr)
 
 uint32_t FLASH_Init()
 {
-    log_info(__func__);
     // set program size
     CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE_0);
     SET_BIT(FLASH->CR, FLASH_CR_PSIZE_1);
