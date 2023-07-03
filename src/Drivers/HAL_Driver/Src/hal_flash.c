@@ -214,7 +214,7 @@ uint32_t FLASH_Erase(uint32_t addr)
     uint32_t nSector = FLASH_Get_Sector_Num(addr);
     assert_param(nSector != 0xFF);
 
-    uint32_t sectorStartAddr = sector_addr[nSector];
+    // uint32_t sectorStartAddr = sector_addr[nSector];
     log_info("FLASH_Erase sectorStartAddr:0x%X", sector_addr[nSector]);
 
     // unlock flash

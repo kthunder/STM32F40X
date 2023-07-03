@@ -10,6 +10,11 @@
 #include "hal_rcc.h"
 #include "hal_usart.h"
 #include "hal_spi.h"
+#include "MinRTOS.h"
+#include "task.h"
+
+portSTACK_TYPE taskStack[128] = {0};
+portSTACK_TYPE *pStack = NULL;
 
 void SystemInit()
 {
@@ -40,28 +45,22 @@ void GpioInit()
     GPIO_Init(GPIOA, &spi1_config);
 }
 
-uint32_t testSVC(uint32_t arg0, uint32_t arg1, uint32_t arg2, uint32_t arg3)
+void task(void *param)
 {
-    __NOP();
-    __ASM __volatile("svc #1\n");
-    __NOP();
-    return 0;
+    while (1)
+    {
+        log_info("heart beat %d ms", HAL_GetTick());
+        delay_ms(1000);
+    }
 }
 
 int main()
 {
     GpioInit();
     USART_Init(USART1);
-    SPI_Init(SPI1);
 
-    uint32_t res = 0;
-    uint8_t ucTxBuffer[0x10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
-    uint8_t ucRxBuffer[0x10] = {0};
-    SPI_Transmit(SPI1, ucTxBuffer, ucRxBuffer, 16);
+    pStack = pxPortInitStack(taskStack + (portSTACK_TYPE)(128), task, NULL);
+    StartFirstTask();
 
-    while (1)
-    {
-        log_info("heart beat %d ms", HAL_GetTick());
-        delay_ms(1000);
-    }
+    while (1);
 }
