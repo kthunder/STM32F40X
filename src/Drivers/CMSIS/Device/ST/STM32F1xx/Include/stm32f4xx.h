@@ -230,6 +230,16 @@ extern "C"
     SET_BIT(REG, VAL << FILED##_Pos); \
   } while (0);
 
+#define WAITE_HIGH(REG, MASK) \
+  do                          \
+  {                           \
+  } while (!READ_BIT(REG, MASK));
+
+#define WAITE_LOW(REG, MASK) \
+  do                         \
+  {                          \
+  } while (READ_BIT(REG, MASK));
+
 /* Use of CMSIS compiler intrinsics for register exclusive access */
 /* Atomic 32-bit register access macro to set one or several bits */
 #define ATOMIC_SET_BIT(REG, BIT)                              \
