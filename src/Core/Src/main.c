@@ -10,18 +10,21 @@
 #include "hal_rcc.h"
 #include "hal_usart.h"
 #include "hal_spi.h"
+
 #include "MinRTOS.h"
-#include "task.h"
 
-portSTACK_TYPE taskStack[128] = {0};
-portSTACK_TYPE *pStack = NULL;
+void GpioInit();
+void task(void *param);
 
-void SystemInit()
+int main()
 {
-    FLASH_Init();
-    RCC_Init();
+    GpioInit();
+    USART_Init(USART1);
+
+    vTaskStartScheduler();
 }
 
+/* private func*/
 void GpioInit()
 {
     GPIO_InitTypeDef usart1_config = {
@@ -43,24 +46,4 @@ void GpioInit()
 
     GPIO_Init(GPIOA, &usart1_config);
     GPIO_Init(GPIOA, &spi1_config);
-}
-
-void task(void *param)
-{
-    while (1)
-    {
-        log_info("heart beat %d ms", HAL_GetTick());
-        delay_ms(1000);
-    }
-}
-
-int main()
-{
-    GpioInit();
-    USART_Init(USART1);
-
-    pStack = pxPortInitStack(taskStack + (portSTACK_TYPE)(128), task, NULL);
-    StartFirstTask();
-
-    while (1);
 }

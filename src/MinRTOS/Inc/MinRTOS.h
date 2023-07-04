@@ -7,15 +7,8 @@ extern "C"
 #endif
 
 #include "portmacro.h"
-
-    typedef struct tskTaskControlBlock
-    {
-        volatile portSTACK_TYPE *pxTopOfStack;
-
-        portSTACK_TYPE *pxStack;
-
-        char pcTaskName[16];
-    } tskTCB;
+#include "list.h"
+#include "task.h"
 
 #ifdef __cplusplus
 }

@@ -17,6 +17,10 @@ extern "C"
 #define portSTACK_TYPE uint32_t
 #define portBASE_TYPE long
 
+    typedef uint32_t TickType_t;
+
+#define portMAX_DELAY (TickType_t)0xFFFFFFFFUL
+
     typedef void (*TaskFunction_t)(void *);
 
 #ifdef __cplusplus
