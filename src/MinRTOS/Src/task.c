@@ -59,11 +59,9 @@ static void prvInitNewTask(TaskFunction_t pxTaskCode,
 {
     portSTACK_TYPE *pxTopOfStack;
     uint32_t x;
-    log_info("pxTopOfStack0 :%p", pxNewTCB->pxTopOfStack);
-    pxTopOfStack = pxNewTCB->pxTopOfStack + (ulStackDepth - 1);
-    log_info("pxTopOfStack1 :%p", pxTopOfStack);
+    
+    pxTopOfStack = pxNewTCB->pxStack + (ulStackDepth - 1);
     pxTopOfStack = (portSTACK_TYPE *)((uint32_t)pxTopOfStack & (~((uint32_t)7)));
-
     for (size_t i = 0; i < 16; i++)
     {
         pxNewTCB->pcTaskName[i] = pcName[i];
@@ -78,7 +76,6 @@ static void prvInitNewTask(TaskFunction_t pxTaskCode,
     pxNewTCB->xStateListItem.pvOwner = pxNewTCB;
 
     pxNewTCB->pxTopOfStack = pxPortInitStack(pxTopOfStack, pxTaskCode, pvParameters);
-    log_info("pxTopOfStack2 :%p", pxNewTCB->pxTopOfStack);
     if ((void *)pxCreatedTask != NULL)
     {
         *pxCreatedTask = (TaskHandle_t)pxNewTCB;
@@ -97,8 +94,6 @@ TaskHandle_t xTaskCreateStatic(TaskFunction_t pxTaskCode,
 
     if ((pxTaskBuffer != NULL) && (puxStackBuffer != NULL))
     {
-        log_info("puxStackBuffer :%p", puxStackBuffer);
-        log_info("pxTaskBuffer :%p", pxTaskBuffer);
         pxNewTCB = (TCB_t *)pxTaskBuffer;
         pxNewTCB->pxStack = (portSTACK_TYPE *)puxStackBuffer;
 
@@ -125,7 +120,7 @@ portSTACK_TYPE *pxPortInitStack(portSTACK_TYPE *pxTopOfStack, TaskFunction_t pxC
     *pxTopOfStack = (portSTACK_TYPE)pvParameters;
 
     pxTopOfStack -= 8;
-
+    log_info("pxTopOfStack after init %p", pxTopOfStack);
     return pxTopOfStack;
 }
 
@@ -144,7 +139,7 @@ void vTaskStartScheduler()
     TCB_t task1TCB;
     // TCB_t task2TCB;
     prvInitTaskLists();
-    log_info("taskStack :%p", taskStack);
+
     TaskHandle_t handle = xTaskCreateStatic(task, "TASK1", 128, NULL, taskStack, &task1TCB);
     vListInsert(&pxReadyTaskList[0], &(task1TCB.xStateListItem));
 
