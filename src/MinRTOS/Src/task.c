@@ -74,7 +74,7 @@ void xTaskIncremmentTick()
 
 void SVC_Handler()
 {
-    log_info(__func__);
+    // log_info(__func__);
     __asm volatile(
         ".global pxCurrentTCB             \n"
         "    ldr r3, =pxCurrentTCB        \n"
@@ -89,7 +89,7 @@ void SVC_Handler()
 
 void PendSV_Handler()
 {
-    log_info(__func__);
+    // log_info(__func__);
     __asm volatile(
         ".global pxCurrentTCB             \n"
         "    mrs r0, psp                  \n"
@@ -101,6 +101,8 @@ void PendSV_Handler()
         "    stmdb sp!, {r3, r14}         \n"
         "    mov r0, %0                   \n"
         "    msr basepri, r0              \n"
+        "    dsb                          \n"
+        "    isb                          \n"
         "    bl vTaskSwitchContext        \n"
         "    mov r0, #0                   \n"
         "    msr basepri, r0              \n"
@@ -119,7 +121,6 @@ void PendSV_Handler()
 
 void SysTick_Handler()
 {
-    log_info(__func__);
     portDIASBLE_INTERUPTS();
 
     xTaskIncremmentTick();
@@ -217,21 +218,21 @@ portSTACK_TYPE* pxPortInitStack(portSTACK_TYPE* pxTopOfStack, TaskFunction_t pxC
 
 void vTaskSwitchContext()
 {
-    log_info(__func__);
-
     if (pxCurrentTCB == &IdleTaskTCB) {
-        log_info("pxCurrentTCB IdleTaskTCB");
+        // log_info("pxCurrentTCB IdleTaskTCB");
         if (task1TCB.xTicksToDelay == 0) {
             pxCurrentTCB = &task1TCB;
-            log_info("to task1TCB");
+            // log_info("to task1TCB");
         } else if (task2TCB.xTicksToDelay == 0) {
             pxCurrentTCB = &task2TCB;
-            log_info("to task2TCB");
+            // log_info("to task2TCB");
         } else {
             return;
         }
     } else {
+
         if (pxCurrentTCB == &task1TCB) {
+            // log_info("pxCurrentTCB task1TCB");
             if (task2TCB.xTicksToDelay == 0) {
                 pxCurrentTCB = &task2TCB;
             } else if (pxCurrentTCB->xTicksToDelay != 0) {
@@ -242,6 +243,7 @@ void vTaskSwitchContext()
 
         } else if (pxCurrentTCB == &task2TCB) {
             {
+                // log_info("pxCurrentTCB task2TCB");
                 if (task1TCB.xTicksToDelay == 0) {
                     pxCurrentTCB = &task1TCB;
                 } else if (pxCurrentTCB->xTicksToDelay != 0) {
@@ -256,20 +258,20 @@ void vTaskSwitchContext()
 
 void task1(void* param)
 {
-    log_info(__func__);
     while (1) {
+        log_info(__func__);
         // log_info("heart beat %d ms", HAL_GetTick());
         // vTaskDelay(100);
-        delay_ms(1000);
+        delay_ms(10);
     }
 }
 void task2(void* param)
 {
-    log_info(__func__);
     while (1) {
+        log_info(__func__);
         // log_info("beat heart %d ms", HAL_GetTick());
         // vTaskDelay(100);
-        delay_ms(1000);
+        delay_ms(10);
     }
 }
 
@@ -281,8 +283,16 @@ void vTaskDelay(const TickType_t xTicksToDelay)
     taskYIELD();
 }
 
+#define portNVIC_SYSPRI2_REG (*((volatile uint32_t*)0xe000ed20))
+
+#define portNVIC_PENDSV_PRI (((uint32_t)configKERNEL_INTERRUPT_PRIORITY) << 16UL)
+#define portNVIC_SYSTICK_PRI (((uint32_t)configKERNEL_INTERRUPT_PRIORITY) << 24UL)
+
 void vTaskStartScheduler()
 {
+    portNVIC_SYSPRI2_REG |= portNVIC_PENDSV_PRI;
+    portNVIC_SYSPRI2_REG |= portNVIC_SYSTICK_PRI;
+
     prvInitTaskLists();
 
     TaskHandle_t handle0 = xTaskCreateStatic(prvIdleTask, "IDLE", 512, NULL, IdleTaskStack, &IdleTaskTCB);
@@ -298,6 +308,6 @@ void vTaskStartScheduler()
     log_info("&task2TCB       %p", &task2TCB);
     log_info("&IdleTaskTCB    %p", &IdleTaskTCB);
     log_info("pxCurrentTCB    %p", pxCurrentTCB);
-    SysTick_Config(168000000 / 1000);
+    SysTick_Config(168000000 / 100);
     prvStartFirstTask();
 }

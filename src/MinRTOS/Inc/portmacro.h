@@ -21,6 +21,7 @@ typedef uint32_t TickType_t;
 #define portMAX_DELAY (TickType_t)0xFFFFFFFFUL
 
 // 开关中断接口
+#define configKERNEL_INTERRUPT_PRIORITY 255
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY 191
 
 typedef void (*TaskFunction_t)(void*);
