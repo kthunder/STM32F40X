@@ -25,6 +25,7 @@ typedef uint32_t TickType_t;
 
 typedef void (*TaskFunction_t)(void*);
 // 关中断，不带返回值
+#define portDIASBLE_INTERUPTS() vPortRaiseBASEPRI()
 static inline void vPortRaiseBASEPRI()
 {
     uint32_t ulNewBASEPRI = configMAX_SYSCALL_INTERRUPT_PRIORITY;
@@ -36,7 +37,7 @@ static inline void vPortRaiseBASEPRI()
                    : "r"(ulNewBASEPRI)
                    : "memory");
 }
-// 关中断，带返回值
+
 static inline uint32_t ulPortRaiseBASEPRI()
 {
     uint32_t ulNewBASEPRI = configMAX_SYSCALL_INTERRUPT_PRIORITY;
@@ -50,6 +51,9 @@ static inline uint32_t ulPortRaiseBASEPRI()
 
     return ulReturn;
 }
+// 不带中断保护的开中断函数
+#define portENABLE_INTERUPTS() vPortSetBASEPRI(0)
+
 // 开中断，带参数
 static inline void vPortSetBASEPRI(uint32_t ulBASEPRI)
 {
@@ -58,6 +62,14 @@ static inline void vPortSetBASEPRI(uint32_t ulBASEPRI)
                    : "r"(ulBASEPRI)
                    : "memory");
 }
+
+#define portENTER_CRITICAL() vPortEnterCritical()
+#define portEXIT_CRITICAL() vPortExitCritical()
+
+// 关中断，带返回值
+#define portSET_INTERUPT_MASK_FROM_ISR() ulPortRaiseBASEPRI()
+// 带中断保护的开中断函数
+#define portCLEAR_INTERUPT_MASK_FROM_ISR(X) vPortSetBASEPRI(x)
 
 #ifdef __cplusplus
 }

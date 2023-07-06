@@ -1,15 +1,20 @@
 #include "MinRTOS.h"
 #include "cmsis_compiler.h"
 #include "log.h"
+#include "stm32f4xx.h"
 #include "tools.h"
 #define configMAX_PRIORITIES 5
 
-TCB_t *pxCurrentTCB;
+TCB_t* pxCurrentTCB;
 List_t pxReadyTaskList[configMAX_PRIORITIES];
-portSTACK_TYPE taskStack[512] = {0};
-portSTACK_TYPE taskStack2[512] = {0};
+portSTACK_TYPE taskStack[512];
+portSTACK_TYPE taskStack2[512];
 TCB_t task1TCB;
 TCB_t task2TCB;
+extern TickType_t xTickCount;
+
+static portSTACK_TYPE IdleTaskStack[512];
+TCB_t IdleTaskTCB;
 
 /* 在task.h中定义 */
 #define taskYIELD() portYIELD()
@@ -17,7 +22,7 @@ TCB_t task2TCB;
 /* 中断控制状态寄存器：0xe000ed04
  * Bit 28 PENDSVSET: PendSV 悬起位
  */
-#define portNVIC_INT_CTRL_REG (*((volatile uint32_t *)0xe000ed04))
+#define portNVIC_INT_CTRL_REG (*((volatile uint32_t*)0xe000ed04))
 #define portNVIC_PENDSVSET_BIT (1UL << 28UL)
 
 #define portSY_FULL_READ_WRITE (15)
@@ -38,7 +43,27 @@ void prvInitTaskLists()
     for (uint32_t uxPriority = 0; uxPriority < configMAX_PRIORITIES; uxPriority++)
         vListInit(&(pxReadyTaskList[uxPriority]));
 }
+void xTaskIncremmentTick()
+{
+    TCB_t* pxTCB = NULL;
+    const TickType_t xConstTickCount = xTickCount + 1;
+    xTickCount = xConstTickCount;
 
+    List_t list = pxReadyTaskList[0];
+    ListItem_t* item = list.pxIndex->pxNext;
+
+    while (item != list.pxIndex) {
+        pxTCB = item->pvOwner;
+
+        if (pxTCB->xTicksToDelay > 0) {
+            pxTCB->xTicksToDelay--;
+        }
+
+        item = item->pxNext;
+    }
+
+    portYIELD();
+}
 // 1、多寄存器寻址：
 // LDMIA R0!,{R1-R4}
 // 等效于
@@ -49,6 +74,7 @@ void prvInitTaskLists()
 
 void SVC_Handler()
 {
+    log_info(__func__);
     __asm volatile(
         ".global pxCurrentTCB             \n"
         "    ldr r3, =pxCurrentTCB        \n"
@@ -63,7 +89,7 @@ void SVC_Handler()
 
 void PendSV_Handler()
 {
-
+    log_info(__func__);
     __asm volatile(
         ".global pxCurrentTCB             \n"
         "    mrs r0, psp                  \n"
@@ -73,19 +99,37 @@ void PendSV_Handler()
         "    stmdb r0!, {r4-r11}          \n"
         "    str r0, [r2]                 \n"
         "    stmdb sp!, {r3, r14}         \n"
+        "    mov r0, %0                   \n"
+        "    msr basepri, r0              \n"
         "    bl vTaskSwitchContext        \n"
+        "    mov r0, #0                   \n"
+        "    msr basepri, r0              \n"
         "    ldmia sp!, {r3, r14}         \n"
         "    ldr r1, [r3]                 \n"
         "    ldr r0, [r1]                 \n"
-        "    ldmia r0!, {r4-r11}         \n"
+        "    ldmia r0!, {r4-r11}          \n"
         "    msr psp, r0                  \n"
         "    isb                          \n"
         "    bx r14                       \n"
-        "    nop                          \n");
+        "    nop                          \n"
+        :
+        : "r"(configMAX_SYSCALL_INTERRUPT_PRIORITY)
+        :);
+}
+
+void SysTick_Handler()
+{
+    log_info(__func__);
+    portDIASBLE_INTERUPTS();
+
+    xTaskIncremmentTick();
+
+    portENABLE_INTERUPTS();
 }
 
 void prvStartFirstTask()
 {
+    log_info(__func__);
     __asm volatile(
         "    cpsie i \n"
         "    cpsie f \n"
@@ -100,23 +144,26 @@ static void prvTaskExitError()
     while (1)
         ;
 }
+static void prvIdleTask()
+{
+    while (1)
+        ;
+}
 
 static void prvInitNewTask(TaskFunction_t pxTaskCode,
-                           const char *const pcName,
-                           const uint32_t ulStackDepth,
-                           void *const pvParameters,
-                           TaskHandle_t *const pxCreatedTask,
-                           TCB_t *const pxNewTCB)
+    const char* const pcName,
+    const uint32_t ulStackDepth,
+    void* const pvParameters,
+    TaskHandle_t* const pxCreatedTask,
+    TCB_t* const pxNewTCB)
 {
-    portSTACK_TYPE *pxTopOfStack;
+    portSTACK_TYPE* pxTopOfStack;
 
     pxTopOfStack = pxNewTCB->pxStack + (ulStackDepth - 1);
-    pxTopOfStack = (portSTACK_TYPE *)((uint32_t)pxTopOfStack & (~((uint32_t)7)));
-    for (size_t i = 0; i < 16; i++)
-    {
+    pxTopOfStack = (portSTACK_TYPE*)((uint32_t)pxTopOfStack & (~((uint32_t)7)));
+    for (size_t i = 0; i < 16; i++) {
         pxNewTCB->pcTaskName[i] = pcName[i];
-        if (pcName[i] == '\0')
-        {
+        if (pcName[i] == '\0') {
             break;
         }
     }
@@ -126,38 +173,34 @@ static void prvInitNewTask(TaskFunction_t pxTaskCode,
     pxNewTCB->xStateListItem.pvOwner = pxNewTCB;
 
     pxNewTCB->pxTopOfStack = pxPortInitStack(pxTopOfStack, pxTaskCode, pvParameters);
-    if ((void *)pxCreatedTask != NULL)
-    {
+    if ((void*)pxCreatedTask != NULL) {
         *pxCreatedTask = (TaskHandle_t)pxNewTCB;
     }
 }
 
 TaskHandle_t xTaskCreateStatic(TaskFunction_t pxTaskCode,
-                               const char *const pcName,
-                               const uint32_t ulStackDepth,
-                               void *const pvParameters,
-                               portSTACK_TYPE *const puxStackBuffer,
-                               TCB_t *const pxTaskBuffer)
+    const char* const pcName,
+    const uint32_t ulStackDepth,
+    void* const pvParameters,
+    portSTACK_TYPE* const puxStackBuffer,
+    TCB_t* const pxTaskBuffer)
 {
-    TCB_t *pxNewTCB;
+    TCB_t* pxNewTCB;
     TaskHandle_t xReturn;
 
-    if ((pxTaskBuffer != NULL) && (puxStackBuffer != NULL))
-    {
-        pxNewTCB = (TCB_t *)pxTaskBuffer;
-        pxNewTCB->pxStack = (portSTACK_TYPE *)puxStackBuffer;
+    if ((pxTaskBuffer != NULL) && (puxStackBuffer != NULL)) {
+        pxNewTCB = (TCB_t*)pxTaskBuffer;
+        pxNewTCB->pxStack = (portSTACK_TYPE*)puxStackBuffer;
 
         prvInitNewTask(pxTaskCode, pcName, ulStackDepth, pvParameters, &xReturn, pxNewTCB);
-    }
-    else
-    {
+    } else {
         xReturn = NULL;
     }
 
     return xReturn;
 }
 
-portSTACK_TYPE *pxPortInitStack(portSTACK_TYPE *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters)
+portSTACK_TYPE* pxPortInitStack(portSTACK_TYPE* pxTopOfStack, TaskFunction_t pxCode, void* pvParameters)
 {
     pxTopOfStack--;
     *pxTopOfStack = 0x01000000;
@@ -174,51 +217,87 @@ portSTACK_TYPE *pxPortInitStack(portSTACK_TYPE *pxTopOfStack, TaskFunction_t pxC
 
 void vTaskSwitchContext()
 {
-    if (pxCurrentTCB == &task1TCB)
-    {
-        pxCurrentTCB = &task2TCB;
-    }
-    else
-    {
-        pxCurrentTCB = &task1TCB;
+    log_info(__func__);
+
+    if (pxCurrentTCB == &IdleTaskTCB) {
+        log_info("pxCurrentTCB IdleTaskTCB");
+        if (task1TCB.xTicksToDelay == 0) {
+            pxCurrentTCB = &task1TCB;
+            log_info("to task1TCB");
+        } else if (task2TCB.xTicksToDelay == 0) {
+            pxCurrentTCB = &task2TCB;
+            log_info("to task2TCB");
+        } else {
+            return;
+        }
+    } else {
+        if (pxCurrentTCB == &task1TCB) {
+            if (task2TCB.xTicksToDelay == 0) {
+                pxCurrentTCB = &task2TCB;
+            } else if (pxCurrentTCB->xTicksToDelay != 0) {
+                pxCurrentTCB = &IdleTaskTCB;
+            } else {
+                return;
+            }
+
+        } else if (pxCurrentTCB == &task2TCB) {
+            {
+                if (task1TCB.xTicksToDelay == 0) {
+                    pxCurrentTCB = &task1TCB;
+                } else if (pxCurrentTCB->xTicksToDelay != 0) {
+                    pxCurrentTCB = &IdleTaskTCB;
+                } else {
+                    return;
+                }
+            }
+        }
     }
 }
 
-void task(void *param)
+void task1(void* param)
 {
-    // log_info("&task1TCB    %p", &task1TCB);
-    // log_info("&task2TCB    %p", &task2TCB);
-    // log_info("pxCurrentTCB %p", pxCurrentTCB);
-    while (1)
-    {
-        log_info("heart beat %d ms", HAL_GetTick());
+    log_info(__func__);
+    while (1) {
+        // log_info("heart beat %d ms", HAL_GetTick());
+        // vTaskDelay(100);
         delay_ms(1000);
-        portYIELD();
     }
 }
-void task2(void *param)
+void task2(void* param)
 {
-    while (1)
-    {
-        log_info("beat heart %d ms", HAL_GetTick());
+    log_info(__func__);
+    while (1) {
+        // log_info("beat heart %d ms", HAL_GetTick());
+        // vTaskDelay(100);
         delay_ms(1000);
-        portYIELD();
     }
+}
+
+void vTaskDelay(const TickType_t xTicksToDelay)
+{
+    TCB_t* pxTCB = NULL;
+    pxTCB = pxCurrentTCB;
+    pxTCB->xTicksToDelay = xTicksToDelay;
+    taskYIELD();
 }
 
 void vTaskStartScheduler()
 {
     prvInitTaskLists();
 
-    TaskHandle_t handle = xTaskCreateStatic(task, "TASK1", 512, NULL, taskStack, &task1TCB);
+    TaskHandle_t handle0 = xTaskCreateStatic(prvIdleTask, "IDLE", 512, NULL, IdleTaskStack, &IdleTaskTCB);
+    TaskHandle_t handle1 = xTaskCreateStatic(task1, "TASK1", 512, NULL, taskStack, &task1TCB);
     TaskHandle_t handle2 = xTaskCreateStatic(task2, "TASK2", 512, NULL, taskStack2, &task2TCB);
     vListInsert(&pxReadyTaskList[0], &(task1TCB.xStateListItem));
     vListInsert(&pxReadyTaskList[0], &(task2TCB.xStateListItem));
+    vListInsert(&pxReadyTaskList[0], &(IdleTaskTCB.xStateListItem));
 
     pxCurrentTCB = &task1TCB;
     log_info("main");
-    log_info("&task1TCB    %p", &task1TCB);
-    log_info("&task2TCB    %p", &task2TCB);
-    log_info("pxCurrentTCB %p", pxCurrentTCB);
+    log_info("&task1TCB       %p", &task1TCB);
+    log_info("&task2TCB       %p", &task2TCB);
+    log_info("&IdleTaskTCB    %p", &IdleTaskTCB);
+    log_info("pxCurrentTCB    %p", pxCurrentTCB);
+    SysTick_Config(168000000 / 1000);
     prvStartFirstTask();
 }
