@@ -14,7 +14,6 @@
 #include "MinRTOS.h"
 
 void GpioInit();
-void task(void *param);
 
 int main()
 {
@@ -43,7 +42,16 @@ void GpioInit()
         .pupd = GPIO_PUPD_NONE,
         .af = GPIO_AF_5,
     };
+    GPIO_InitTypeDef led_config = {
+        .pin = GPIO_Pin_6 | GPIO_Pin_7,
+        .mode = GPIO_MODE_OUT,
+        .otype = GPIO_OTYPE_PP,
+        .speed = GPIO_SPEED_FREQ_HIGH,
+        .pupd = GPIO_PUPD_NONE,
+        .af = GPIO_AF_0,
+    };
 
     GPIO_Init(GPIOA, &usart1_config);
-    GPIO_Init(GPIOA, &spi1_config);
+    // GPIO_Init(GPIOA, &spi1_config);
+    GPIO_Init(GPIOA, &led_config);
 }
