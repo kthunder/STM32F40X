@@ -4,7 +4,7 @@ cd /d %~dp0%
 openocd.exe ^
 -f "./stm32f4discovery.cfg" ^
 -c "program %1" ^
--c reset ^
--c shutdown
+-c reset 
+@REM -c shutdown
 
 cd /d %old_dir%

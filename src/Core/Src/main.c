@@ -20,7 +20,15 @@ int main()
     GpioInit();
     USART_Init(USART1);
 
-    vTaskStartScheduler();
+    while (1)
+    {
+        delay_ms(100);
+        // GPIO_TogglePin(GPIOA, GPIO_Pin_6);
+        GPIO_TogglePin(GPIOA, GPIO_Pin_7);
+        log_info("gyuwghfyu\n");
+    }
+
+    // vTaskStartScheduler();
 }
 
 /* private func*/
