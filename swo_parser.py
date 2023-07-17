@@ -156,7 +156,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcl_socket:
         data = b''
         while len(data) == 0:
             try:
-                data = tcl_socket.recv(10)
+                data = tcl_socket.recv(1024)
             except BlockingIOError:
                 time.sleep(0.1)
 
