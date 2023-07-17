@@ -60,4 +60,6 @@ int log_add_callback(log_LogFn fn, void *udata, int level);
 
 void log_log(int level, const char *file, int line, const char *fmt, ...);
 
+void log_hex(char * ucInfo, uint8_t * ucData, uint32_t len);
+
 #endif

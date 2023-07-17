@@ -13,26 +13,37 @@
 
 #include "MinRTOS.h"
 
-void GpioInit();
-
 int main()
 {
-    GpioInit();
-    USART_Init(USART1);
+    // LedInit();
+    UartInit();
+
+    test_spi();
 
     while (1)
     {
-        delay_ms(100);
-        // GPIO_TogglePin(GPIOA, GPIO_Pin_6);
-        GPIO_TogglePin(GPIOA, GPIO_Pin_7);
-        log_info("gyuwghfyu\n");
+        delay_ms(3000);
+        // GPIO_TogglePin(GPIOA, GPIO_Pin_7 | GPIO_Pin_6);
+        // log_info("heart beat!\n");
     }
 
     // vTaskStartScheduler();
 }
 
 /* private func*/
-void GpioInit()
+void LedInit()
+{
+    GPIO_InitTypeDef led_config = {
+        .pin = GPIO_Pin_6 | GPIO_Pin_7,
+        .mode = GPIO_MODE_OUT,
+        .otype = GPIO_OTYPE_PP,
+        .speed = GPIO_SPEED_FREQ_HIGH,
+        .pupd = GPIO_PUPD_NONE,
+        .af = GPIO_AF_0,
+    };
+    GPIO_Init(GPIOA, &led_config);
+}
+void UartInit()
 {
     GPIO_InitTypeDef usart1_config = {
         .pin = GPIO_Pin_9,
@@ -42,24 +53,6 @@ void GpioInit()
         .pupd = GPIO_PUPD_PULL_UP,
         .af = GPIO_AF_7,
     };
-    GPIO_InitTypeDef spi1_config = {
-        .pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7,
-        .mode = GPIO_MODE_AF_OUT,
-        .otype = GPIO_OTYPE_PP,
-        .speed = GPIO_SPEED_FREQ_HIGH,
-        .pupd = GPIO_PUPD_NONE,
-        .af = GPIO_AF_5,
-    };
-    GPIO_InitTypeDef led_config = {
-        .pin = GPIO_Pin_6 | GPIO_Pin_7,
-        .mode = GPIO_MODE_OUT,
-        .otype = GPIO_OTYPE_PP,
-        .speed = GPIO_SPEED_FREQ_HIGH,
-        .pupd = GPIO_PUPD_NONE,
-        .af = GPIO_AF_0,
-    };
-
     GPIO_Init(GPIOA, &usart1_config);
-    // GPIO_Init(GPIOA, &spi1_config);
-    GPIO_Init(GPIOA, &led_config);
+    USART_Init(USART1);
 }

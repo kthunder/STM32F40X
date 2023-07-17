@@ -155,6 +155,17 @@ void log_log(int level, const char *file_name, int line, const char *fmt, ...)
     unlock();
 }
 
+void log_hex(char * ucInfo, uint8_t * ucData, uint32_t len)
+{
+    log_info("%s : ", ucInfo);
+    for (size_t i = 0; i < len; i++)
+    {
+        printf("%02X", ucData[i]);
+        if ((i+1 == len) || ((i+1)%20 == 0))
+            printf("\n");
+    }
+}
+
 #ifdef TEST_LOG
 int main(int argc, char *argv[])
 {
