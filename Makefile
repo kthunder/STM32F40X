@@ -80,5 +80,8 @@ clean_all :
 
 .PHONY : download
 download :
-	compiledb make -j12
 	$(call download)
+
+.PHONY : gen
+gen :
+	wsl -e bear -- make -j12

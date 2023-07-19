@@ -1,7 +1,6 @@
 #include "stm32f4xx.h"
 #include "hal_spi.h"
 #include "hal_def.h"
-#include "hal_gpio.h"
 
 /***
  * SPI初始化
@@ -13,27 +12,25 @@
  */
 uint32_t SPI_Init(SPI_TypeDef *SPIx)
 {
-    // SET_BIT(SPIx->CR1, SPI_CR1_CPHA);
-    // SET_BIT(SPIx->CR1, SPI_CR1_CPOL);
+    SET_BIT(SPIx->CR1, SPI_CR1_CPHA);
+    SET_BIT(SPIx->CR1, SPI_CR1_CPOL);
     SET_BIT(SPIx->CR1, SPI_CR1_MSTR);
-    SET_BIT(SPIx->CR1, SPI_CR1_LSBFIRST);
+    CLEAR_BIT(SPIx->CR1, SPI_CR1_LSBFIRST);
     // SET_BIT(SPIx->CR1, SPI_CR1_SSM);
     CLEAR_BIT(SPIx->CR1, SPI_CR1_BIDIMODE);
-    WRITE_BIT(SPIx->CR1, SPI_CR1_BR, 5);
+    WRITE_BIT(SPIx->CR1, SPI_CR1_BR, 6);
 
     CLEAR_BIT(SPIx->CR2, SPI_CR2_FRF);
     SET_BIT(SPIx->CR2, SPI_CR2_SSOE);
     SET_BIT(SPIx->CR1, SPI_CR1_SPE);
 
-    GPIO_SetBits(GPIOA, GPIO_Pin_4);
     return HAL_OK;
 }
 
 uint32_t SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *pTxBuffer, uint8_t *pRxBuffer, uint32_t len)
 {
     SET_BIT(SPIx->CR1, SPI_CR1_SPE);
-    // CLEAR_BIT(SPIx->CR1, SPI_CR1_SSI);
-    GPIO_ResetBits(GPIOA, GPIO_Pin_4);
+    // CLEAR_BIT(SPIx->CR1, SPI_CR1_SSI)
     while (len)
     {
         WAITE_LOW(SPIx->SR, SPI_SR_BSY);
@@ -49,7 +46,6 @@ uint32_t SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *pTxBuffer, uint8_t *pRxBuffer,
         len--;
     }
     // SET_BIT(SPIx->CR1, SPI_CR1_SSI);
-    GPIO_SetBits(GPIOA, GPIO_Pin_4);
     CLEAR_BIT(SPIx->CR1, SPI_CR1_SPE);
     return HAL_OK;
 }

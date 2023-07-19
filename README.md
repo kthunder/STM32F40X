@@ -1,16 +1,44 @@
 # Contex-M4 驱动
 
-## 工具
+## 编译
 
-### 编译链
+### 交叉编译器
 
-#### arm-none-eabi-gcc
+arm-none-eabi-gcc
 
-### 下载器驱动
+### 代码解析
 
-#### openocd
+ 使用vscode自带插件C/C++解析代码,使用compile_commands.json文件辅助解析
 
-openocd下载脚本
+#### 如何生成compile_commands.json文件
+
+- win环境下生成compile_commands.json的工具：
+
+```shell
+#在win下依赖python的compiledb库
+#1. 安装compiledb
+pip install compiledb
+#2. 使用compiledb运行make命令即可生成compile_commands.json
+compiledb make
+```
+
+- win+wsl环境下生成compile_commands.json的工具：
+
+```shell
+#在wsl安装bear和gcc-arm-none-eabi
+sudo apt-get install gcc-arm-none-eabi
+sudo apt-get install bear
+#生成compile_commands.json
+bear -- make -j12
+#在ps环境下使用wsl编译并生成compile_commands.json
+wsl -e bear -- make -j12
+```
+
+## 下载
+
+### 调试下载工具
+
+openocd
 
 ```powershell
 set old_dir=%cd%
@@ -29,33 +57,15 @@ openocd.exe ^
 cd /d %old_dir%
 ```
 
-### 代码解析
-
-#### C/C++
-
- 使用vscode自带插件C/C++解析代码,使用compile_commands.json文件辅助解析
-
-win环境下生成compile_commands.json的工具：
-
-```shell
-#在win下依赖python的compiledb库
-#1. 安装compiledb
-pip install compiledb
-#2. 使用compiledb运行make命令即可生成compile_commands.json
-compiledb make
-```
+## Debug工具
 
 ### 调试打印
 
 https://wiki.segger.com/J-Link_SWO_Viewer
 
-使用核内ITM即可
+使用核内ITM即可 `JLinkSWOViewerCL -cpufreq 168000000 -device STM32F407VE`
 
-`JLinkSWOViewerCL -cpufreq 168000000 -device STM32F407VE`
-
-### Debug工具
-
-#### ContexM-Debug
+### ContexM-Debug
 
 配置文件 launch.json
 
