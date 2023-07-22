@@ -27,7 +27,7 @@ uint32_t SPI_Init(SPI_TypeDef *SPIx)
     return HAL_OK;
 }
 
-uint32_t SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *pTxBuffer, uint8_t *pRxBuffer, uint32_t len)
+uint32_t SPI_TransmitReceive(SPI_TypeDef *SPIx, uint8_t *pTxBuffer, uint8_t *pRxBuffer, uint32_t len)
 {
     SET_BIT(SPIx->CR1, SPI_CR1_SPE);
     // CLEAR_BIT(SPIx->CR1, SPI_CR1_SSI)
@@ -37,6 +37,53 @@ uint32_t SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *pTxBuffer, uint8_t *pRxBuffer,
 
         WAITE_HIGH(SPIx->SR, SPI_SR_TXE);
         WRITE_REG(SPIx->DR, *(pTxBuffer++));
+
+        WAITE_HIGH(SPIx->SR, SPI_SR_RXNE);
+        *(pRxBuffer++) = (uint8_t)READ_REG(SPIx->DR);
+
+        WAITE_LOW(SPIx->SR, SPI_SR_BSY);
+
+        len--;
+    }
+    // SET_BIT(SPIx->CR1, SPI_CR1_SSI);
+    CLEAR_BIT(SPIx->CR1, SPI_CR1_SPE);
+    return HAL_OK;
+}
+
+uint32_t SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *pTxBuffer, uint32_t len)
+{
+    uint8_t tmp = 0;
+    SET_BIT(SPIx->CR1, SPI_CR1_SPE);
+    // CLEAR_BIT(SPIx->CR1, SPI_CR1_SSI)
+    while (len)
+    {
+        WAITE_LOW(SPIx->SR, SPI_SR_BSY);
+
+        WAITE_HIGH(SPIx->SR, SPI_SR_TXE);
+        WRITE_REG(SPIx->DR, *(pTxBuffer++));
+
+        WAITE_HIGH(SPIx->SR, SPI_SR_RXNE);
+        tmp = (uint8_t)READ_REG(SPIx->DR);
+
+        WAITE_LOW(SPIx->SR, SPI_SR_BSY);
+
+        len--;
+    }
+    // SET_BIT(SPIx->CR1, SPI_CR1_SSI);
+    CLEAR_BIT(SPIx->CR1, SPI_CR1_SPE);
+    return HAL_OK;
+}
+
+uint32_t SPI_Receive(SPI_TypeDef *SPIx, uint8_t *pRxBuffer, uint32_t len)
+{
+    SET_BIT(SPIx->CR1, SPI_CR1_SPE);
+    // CLEAR_BIT(SPIx->CR1, SPI_CR1_SSI)
+    while (len)
+    {
+        WAITE_LOW(SPIx->SR, SPI_SR_BSY);
+
+        WAITE_HIGH(SPIx->SR, SPI_SR_TXE);
+        WRITE_REG(SPIx->DR, 0xFF);
 
         WAITE_HIGH(SPIx->SR, SPI_SR_RXNE);
         *(pRxBuffer++) = (uint8_t)READ_REG(SPIx->DR);

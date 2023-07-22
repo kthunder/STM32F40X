@@ -6,11 +6,9 @@
 #include "log.h"
 #include "tools.h"
 
-static uint8_t ucTxBuffer[0x100] = {0};
-static uint8_t ucRxBuffer[0x100] = {0};
-
 // Block 64K
 // Sector 4K
+// Page 256B
 
 // W25X16读写指令表
 #define W25X_WriteEnable 0x06
@@ -43,6 +41,30 @@ static uint8_t ucRxBuffer[0x100] = {0};
 #define ENABLE_CS() GPIO_ResetBits(GPIOB, GPIO_Pin_0)
 #define DISABLE_CS() GPIO_SetBits(GPIOB, GPIO_Pin_0)
 
+static uint32_t W25Qx_WriteEnable(void)
+{
+    uint8_t cmd = W25X_WriteEnable;
+    ENABLE_CS();
+    SPI_Transmit(SPI1, &cmd, 1);
+    DISABLE_CS();
+    return 0;
+}
+
+static uint32_t W25Qx_WriteDisable(void)
+{
+    uint8_t cmd = W25X_WriteDisable;
+    ENABLE_CS();
+    SPI_Transmit(SPI1, &cmd, 1);
+    DISABLE_CS();
+    return 0;
+}
+
+static void W25Qx_WaiteBusy(void)
+{
+    while (W25Qx_ReadSR(1) & (1 << 7))
+        ;
+}
+
 uint32_t W25Qx_Init(void)
 {
     GPIO_InitTypeDef spi1_config = {
@@ -68,200 +90,95 @@ uint32_t W25Qx_Init(void)
     return 0;
 }
 
-uint32_t W25Qx_GetStatus(uint32_t regNum, uint8_t *regValue)
+uint8_t W25Qx_ReadSR(uint32_t regNum)
 {
+    uint8_t cmd = 0;
     switch (regNum)
     {
     case 1:
-        ucTxBuffer[0] = W25X_ReadStatusReg1;
+        cmd = W25X_ReadStatusReg1;
         break;
     case 2:
-        ucTxBuffer[0] = W25X_ReadStatusReg2;
+        cmd = W25X_ReadStatusReg2;
         break;
     case 3:
-        ucTxBuffer[0] = W25X_ReadStatusReg3;
+        cmd = W25X_ReadStatusReg3;
         break;
     default:
         return 1;
         break;
     };
     ENABLE_CS();
-    SPI_Transmit(SPI1, ucTxBuffer, ucRxBuffer, 10);
+    SPI_Transmit(SPI1, &cmd, 1);
+    SPI_Receive(SPI1, &cmd, 1);
     DISABLE_CS();
-    // log_hex("ucRxBuffer", ucRxBuffer, 10);
-    *regValue = ucRxBuffer[1];
-    return 0;
+    return cmd;
 }
-uint32_t W25Qx_WriteEnable(void)
+
+uint8_t W25Qx_ReadID()
 {
-    ucTxBuffer[0] = W25X_WriteEnable;
+    uint8_t ucCmd[4] = {W25X_DeviceID};
     ENABLE_CS();
-    SPI_Transmit(SPI1, ucTxBuffer, ucRxBuffer, 10);
+    SPI_Transmit(SPI1, ucCmd, 1);
+    SPI_Receive(SPI1, ucCmd, 4);
     DISABLE_CS();
-    // log_hex("ucRxBuffer", ucRxBuffer, 10);
-    return 0;
+    return ucCmd[3];
 }
-uint32_t W25Qx_Read_ID(uint8_t *ID)
+
+uint32_t W25Qx_Read(uint8_t *pBuffer, uint32_t addr, uint32_t Size)
 {
-    ucTxBuffer[0] = W25X_DeviceID;
+    uint8_t ucCmd[4] = {W25X_ReadData, (uint8_t)(addr >> 16), (uint8_t)(addr >> 8), (uint8_t)(addr)};
     ENABLE_CS();
-    SPI_Transmit(SPI1, ucTxBuffer, ucRxBuffer, 10);
+    SPI_Transmit(SPI1, ucCmd, 4);
+    SPI_Receive(SPI1, pBuffer, Size);
     DISABLE_CS();
-    *ID = ucRxBuffer[4];
-    // log_hex("ucRxBuffer", ucRxBuffer, 10);
     return 0;
 }
 
-uint32_t W25Qx_Read(uint8_t *pData, uint32_t ReadAddr, uint32_t Size)
+uint32_t W25Qx_EraseSector(uint32_t addr)
 {
-    uint8_t cmd[4];
-
-    /* Configure the command */
-    ucTxBuffer[0] = W25X_ReadData;
-    ucTxBuffer[1] = (uint8_t)(ReadAddr >> 16);
-    ucTxBuffer[2] = (uint8_t)(ReadAddr >> 8);
-    ucTxBuffer[3] = (uint8_t)(ReadAddr);
-
+    W25Qx_WriteEnable();
+    W25Qx_WaiteBusy();
+    uint8_t ucCmd[4] = {W25X_SectorErase, (uint8_t)(addr >> 16), (uint8_t)(addr >> 8), (uint8_t)(addr)};
     ENABLE_CS();
-    SPI_Transmit(SPI1, ucTxBuffer, ucRxBuffer, 10);
-    log_hex("ucRxBuffer", ucRxBuffer, 10);
+    SPI_Transmit(SPI1, ucCmd, 4);
     DISABLE_CS();
+    W25Qx_WaiteBusy();
     return 0;
 }
 
-// uint32_t W25Qx_Write(uint8_t *pData, uint32_t WriteAddr, uint32_t Size)
-// {
-//     uint8_t cmd[4];
-//     uint32_t end_addr, current_size, current_addr;
-//     uint32_t tickstart = HAL_GetTick();
+uint32_t W25Qx_EraseBlock(uint32_t addr)
+{
+    W25Qx_WriteEnable();
+    W25Qx_WaiteBusy();
+    uint8_t ucCmd[4] = {W25X_BlockErase, (uint8_t)(addr >> 16), (uint8_t)(addr >> 8), (uint8_t)(addr)};
+    ENABLE_CS();
+    SPI_Transmit(SPI1, ucCmd, 4);
+    DISABLE_CS();
+    W25Qx_WaiteBusy();
+    return 0;
+}
 
-//     /* Calculation of the size between the write address and the end of the page */
-//     current_addr = 0;
+uint32_t W25Qx_EraseChip()
+{
+    W25Qx_WriteEnable();
+    W25Qx_WaiteBusy();
+    uint8_t ucCmd[1] = {W25X_ChipErase};
+    ENABLE_CS();
+    SPI_Transmit(SPI1, ucCmd, 1);
+    DISABLE_CS();
+    W25Qx_WaiteBusy();
+    return 0;
+}
 
-//     while (current_addr <= WriteAddr)
-//     {
-//         current_addr += W25Q128FV_PAGE_SIZE;
-//     }
-//     current_size = current_addr - WriteAddr;
-
-//     /* Check if the size of the data is less than the remaining place in the page */
-//     if (current_size > Size)
-//     {
-//         current_size = Size;
-//     }
-
-//     /* Initialize the adress variables */
-//     current_addr = WriteAddr;
-//     end_addr = WriteAddr + Size;
-
-//     /* Perform the write page by page */
-//     do
-//     {
-//         /* Configure the command */
-//         cmd[0] = PAGE_PROG_CMD;
-//         cmd[1] = (uint8_t)(current_addr >> 16);
-//         cmd[2] = (uint8_t)(current_addr >> 8);
-//         cmd[3] = (uint8_t)(current_addr);
-
-//         /* Enable write operations */
-//         BSP_W25Qx_WriteEnable();
-
-//         W25Qx_Enable();
-//         /* Send the command */
-//         if (HAL_SPI_Transmit(&hspi2, cmd, 4, W25Qx_TIMEOUT_VALUE) != HAL_OK)
-//         {
-//             return W25Qx_ERROR;
-//         }
-
-//         /* Transmission of the data */
-//         if (HAL_SPI_Transmit(&hspi2, pData, current_size, W25Qx_TIMEOUT_VALUE) != HAL_OK)
-//         {
-//             return W25Qx_ERROR;
-//         }
-//         W25Qx_Disable();
-//         /* Wait the end of Flash writing */
-//         while (BSP_W25Qx_GetStatus() == W25Qx_BUSY)
-//         {
-//             /* Check for the Timeout */
-//             if ((HAL_GetTick() - tickstart) > W25Qx_TIMEOUT_VALUE)
-//             {
-//                 return W25Qx_TIMEOUT;
-//             }
-//         }
-
-//         /* Update the address and size variables for next page programming */
-//         current_addr += current_size;
-//         pData += current_size;
-//         current_size = ((current_addr + W25Q128FV_PAGE_SIZE) > end_addr) ? (end_addr - current_addr) : W25Q128FV_PAGE_SIZE;
-//     } while (current_addr < end_addr);
-
-//     return W25Qx_OK;
-// }
-
-// /**
-//  * @brief  Erases the specified block of the QSPI memory.
-//  * @param  BlockAddress: Block address to erase
-//  * @retval QSPI memory status
-//  */
-// uint8_t BSP_W25Qx_Erase_Block(uint32_t Address)
-// {
-//     uint8_t cmd[4];
-//     uint32_t tickstart = HAL_GetTick();
-//     cmd[0] = SECTOR_ERASE_CMD;
-//     cmd[1] = (uint8_t)(Address >> 16);
-//     cmd[2] = (uint8_t)(Address >> 8);
-//     cmd[3] = (uint8_t)(Address);
-
-//     /* Enable write operations */
-//     BSP_W25Qx_WriteEnable();
-
-//     /*Select the FLASH: Chip Select low */
-//     W25Qx_Enable();
-//     /* Send the read ID command */
-//     HAL_SPI_Transmit(&hspi2, cmd, 4, W25Qx_TIMEOUT_VALUE);
-//     /*Deselect the FLASH: Chip Select high */
-//     W25Qx_Disable();
-
-//     /* Wait the end of Flash writing */
-//     while (BSP_W25Qx_GetStatus() == W25Qx_BUSY)
-//     {
-//         /* Check for the Timeout */
-//         if ((HAL_GetTick() - tickstart) > W25Q128FV_SECTOR_ERASE_MAX_TIME)
-//         {
-//             return W25Qx_TIMEOUT;
-//         }
-//     }
-//     return W25Qx_OK;
-// }
-
-// /**
-//  * @brief  Erases the entire QSPI memory.This function will take a very long time.
-//  * @retval QSPI memory status
-//  */
-// uint8_t BSP_W25Qx_Erase_Chip(void)
-// {
-//     uint8_t cmd[4];
-//     uint32_t tickstart = HAL_GetTick();
-//     cmd[0] = SECTOR_ERASE_CMD;
-
-//     /* Enable write operations */
-//     BSP_W25Qx_WriteEnable();
-
-//     /*Select the FLASH: Chip Select low */
-//     W25Qx_Enable();
-//     /* Send the read ID command */
-//     HAL_SPI_Transmit(&hspi2, cmd, 1, W25Qx_TIMEOUT_VALUE);
-//     /*Deselect the FLASH: Chip Select high */
-//     W25Qx_Disable();
-
-//     /* Wait the end of Flash writing */
-//     while (BSP_W25Qx_GetStatus() != W25Qx_BUSY)
-//     {
-//         /* Check for the Timeout */
-//         if ((HAL_GetTick() - tickstart) > W25Q128FV_BULK_ERASE_MAX_TIME)
-//         {
-//             return W25Qx_TIMEOUT;
-//         }
-//     }
-//     return W25Qx_OK;
-// }
+uint32_t W25Qx_WritePage(uint8_t *pBuffer, uint32_t addr, uint32_t Size)
+{
+    W25Qx_WriteEnable();
+    uint8_t ucCmd[4] = {W25X_PageProgram, (uint8_t)(addr >> 16), (uint8_t)(addr >> 8), (uint8_t)(addr)};
+    ENABLE_CS();
+    SPI_Transmit(SPI1, ucCmd, 4);
+    SPI_Transmit(SPI1, pBuffer, Size);
+    DISABLE_CS();
+    W25Qx_WaiteBusy();
+    return 0;
+}
