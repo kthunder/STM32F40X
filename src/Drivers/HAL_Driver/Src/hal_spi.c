@@ -71,6 +71,8 @@ uint32_t SPI_Transmit(SPI_TypeDef *SPIx, uint8_t *pTxBuffer, uint32_t len)
     }
     // SET_BIT(SPIx->CR1, SPI_CR1_SSI);
     CLEAR_BIT(SPIx->CR1, SPI_CR1_SPE);
+
+    UNUSED(tmp);
     return HAL_OK;
 }
 

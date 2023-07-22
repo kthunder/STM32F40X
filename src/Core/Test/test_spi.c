@@ -2,13 +2,15 @@
 #include <stdio.h>
 #include "log.h"
 #include "tools.h"
-static uint8_t ucBuffer[0x1000];
+#include "w25qxx.h"
+static uint8_t ucTxBuffer[0x1000];
+static uint8_t ucRxBuffer[0x1000];
 
 void set_buffer()
 {
     for (size_t i = 0; i < 0x1000; i++)
     {
-        ucBuffer[i] = i;
+        ucTxBuffer[i] = i;
     }
 }
 
@@ -22,6 +24,10 @@ void test_spi()
     log_info("state1 %02X", W25Qx_ReadSR(1));
     log_info("flashId %02X", W25Qx_ReadID());
 
-    W25Qx_Read(ucBuffer, 0x00, 5);
-    log_hex("ucBuffer", ucBuffer, 5);
+    uint32_t len = 0x20;
+
+    W25Qx_WritePage(0x00,ucTxBuffer,len);
+
+    W25Qx_Read(0x00, ucRxBuffer, 0xFF);
+    log_hex("ucBuffer", ucRxBuffer, 0xFF);
 }

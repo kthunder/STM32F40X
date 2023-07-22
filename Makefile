@@ -80,6 +80,7 @@ clean_all :
 
 .PHONY : download
 download :
+	make -j12
 	$(call download)
 
 .PHONY : gen

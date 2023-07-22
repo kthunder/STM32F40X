@@ -1,4 +1,4 @@
-#include "W25Qxx.h"
+#include "w25qxx.h"
 #include "stm32f4xx.h"
 #include "hal_flash.h"
 #include "hal_gpio.h"
@@ -125,7 +125,7 @@ uint8_t W25Qx_ReadID()
     return ucCmd[3];
 }
 
-uint32_t W25Qx_Read(uint8_t *pBuffer, uint32_t addr, uint32_t Size)
+uint32_t W25Qx_Read(uint32_t addr, uint8_t *pBuffer, uint32_t Size)
 {
     uint8_t ucCmd[4] = {W25X_ReadData, (uint8_t)(addr >> 16), (uint8_t)(addr >> 8), (uint8_t)(addr)};
     ENABLE_CS();
@@ -171,7 +171,7 @@ uint32_t W25Qx_EraseChip()
     return 0;
 }
 
-uint32_t W25Qx_WritePage(uint8_t *pBuffer, uint32_t addr, uint32_t Size)
+uint32_t W25Qx_WritePage(uint32_t addr, uint8_t *pBuffer, uint32_t Size)
 {
     W25Qx_WriteEnable();
     uint8_t ucCmd[4] = {W25X_PageProgram, (uint8_t)(addr >> 16), (uint8_t)(addr >> 8), (uint8_t)(addr)};
