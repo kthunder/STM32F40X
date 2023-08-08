@@ -24,10 +24,14 @@ void test_spi()
     log_info("state1 %02X", W25Qx_ReadSR(1));
     log_info("flashId %02X", W25Qx_ReadID());
 
-    uint32_t len = 0x20;
+    uint32_t addr = 0x100*2;
+    uint32_t len = 0x100*3;
 
-    W25Qx_WritePage(0x00,ucTxBuffer,len);
+    // W25Qx_WritePage(addr, ucTxBuffer, len);
+    W25Qx_WriteNoCheck(addr, ucTxBuffer, len);
+    // W25Qx_EraseSector(0);
+    delay_ms(2);
 
-    W25Qx_Read(0x00, ucRxBuffer, 0xFF);
-    log_hex("ucBuffer", ucRxBuffer, 0xFF);
+    W25Qx_Read(addr, ucRxBuffer, len);
+    log_hex("ucBuffer", ucRxBuffer, len);
 }

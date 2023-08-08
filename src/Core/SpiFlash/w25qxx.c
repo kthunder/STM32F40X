@@ -9,6 +9,15 @@
 // Block 64K
 // Sector 4K
 // Page 256B
+// status :
+// s0 : BUSY Erase/Write In Progress
+// s1 : WEL Write Enable Latch
+// s2 : BP0 Block Protect Bits
+// s3 : BP1 Block Protect Bits
+// s4 : BP2 Block Protect Bits
+// s5 : TB Top/Bottom Block Protect
+// s6 : SEC Sector/Block Protect Bit
+// s7 : CMP Complement Protect
 
 // W25X16读写指令表
 #define W25X_WriteEnable 0x06
@@ -173,6 +182,11 @@ uint32_t W25Qx_EraseChip()
 
 uint32_t W25Qx_WritePage(uint32_t addr, uint8_t *pBuffer, uint32_t Size)
 {
+    log_debug(__func__);
+    log_debug("addr 0x%X", addr);
+    log_debug("pBuffer 0x%p", pBuffer);
+    log_debug("Size 0x%X", Size);
+
     W25Qx_WriteEnable();
     uint8_t ucCmd[4] = {W25X_PageProgram, (uint8_t)(addr >> 16), (uint8_t)(addr >> 8), (uint8_t)(addr)};
     ENABLE_CS();
@@ -180,5 +194,22 @@ uint32_t W25Qx_WritePage(uint32_t addr, uint8_t *pBuffer, uint32_t Size)
     SPI_Transmit(SPI1, pBuffer, Size);
     DISABLE_CS();
     W25Qx_WaiteBusy();
+    return 0;
+}
+
+uint32_t W25Qx_WriteNoCheck(uint32_t addr, uint8_t *pBuffer, uint32_t Size)
+{
+    uint32_t nPageRemain = 0x100 - addr % 0x100;
+    nPageRemain = nPageRemain >= Size ? Size : nPageRemain;
+
+    while (Size > 0)
+    {
+        W25Qx_WritePage(addr, pBuffer, nPageRemain);
+        Size -= nPageRemain;
+        addr += nPageRemain;
+        pBuffer += nPageRemain;
+        nPageRemain = Size > 0x100 ? 0x100 : Size;
+    }
+
     return 0;
 }
