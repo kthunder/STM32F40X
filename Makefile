@@ -44,12 +44,6 @@ LDFLAGS += -Wl,--gc-sections,--print-memory-usage,-Map="$(BLD_DIR)/$(TARGET_NAME
 LDFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
 LDFLAGS += --specs=nosys.specs --specs=nano.specs
 
-ifeq ($(OS),Windows_NT)
-   download = $(ENV_DIR)\openocd.cmd $(abspath $(BLD_DIR)/$(TARGET_NAME).elf)
-else
-   download = echo "Not implement"
-endif
-
 vpath %.c $(SRC_DIR)
 vpath %.s $(SRC_DIR)
 vpath %.S $(SRC_DIR)
@@ -81,7 +75,7 @@ clean_all :
 .PHONY : download
 download :
 	make -j12
-	$(call download)
+	$(ENV_DIR)\openocd.cmd $(abspath $(BLD_DIR)/$(TARGET_NAME).elf)
 
 .PHONY : gen
 gen :
