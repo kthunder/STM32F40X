@@ -1,9 +1,11 @@
 # Modify names below
-SRC_DIR := src
-BLD_DIR := build
-ENV_DIR := env
+SRC_DIR := ./src
+BLD_DIR := ./build
 OBJ_DIR := $(BLD_DIR)
-TARGET_NAME := main
+DEP_DIR	:= ./deps
+ENV_DIR := ./env
+
+TARGET := $(BLD_DIR)/main.elf
 
 CROSS_COMPILE = arm-none-eabi-
 AS  = $(CROSS_COMPILE)as
@@ -26,17 +28,18 @@ else
 	BOARD = STM32F407xx
 endif
 
-CCFLAGS := -Wall -O0 -g
-CCFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
-CCFLAGS += -ffunction-sections -fdata-sections -fno-common -fmessage-length=0 -fomit-frame-pointer
-CCFLAGS += -D $(BOARD)
+CFLAGS := -Wall -O0 -g
+CFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
+CFLAGS += -ffunction-sections -fdata-sections -fno-common -fmessage-length=0 -fomit-frame-pointer
+CFLAGS += -D $(BOARD)
 
-CCFLAGS += -I ./src/Core/Inc
-CCFLAGS += -I ./src/Drivers/HAL_Driver/Inc
-CCFLAGS += -I ./src/MinRTOS/Inc
-# CCFLAGS += -I ./src/Drivers/FREE_RTOS/portable/GCC_ARM_CM3
-CCFLAGS += -I ./src/Drivers/CMSIS/Include
-CCFLAGS += -I ./src/Drivers/CMSIS/Device/ST/STM32F1xx/Include
+CFLAGS += -I ./src/Core/Inc
+CFLAGS += -I ./src/Core/SpiFlash
+CFLAGS += -I ./src/Drivers/HAL_Driver/Inc
+CFLAGS += -I ./src/MinRTOS/Inc
+# CFLAGS += -I ./src/Drivers/FREE_RTOS/portable/GCC_ARM_CM3
+CFLAGS += -I ./src/Drivers/CMSIS/Include
+CFLAGS += -I ./src/Drivers/CMSIS/Device/ST/STM32F1xx/Include
 
 LDFLAGS += -T $(ENV_DIR)/$(LD_FILE)
 # LDFLAGS += -nostartfiles -Xlinker -MMD -MP
@@ -44,33 +47,36 @@ LDFLAGS += -Wl,--gc-sections,--print-memory-usage,-Map="$(BLD_DIR)/$(TARGET_NAME
 LDFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
 LDFLAGS += --specs=nosys.specs --specs=nano.specs
 
-vpath %.c $(SRC_DIR)
-vpath %.s $(SRC_DIR)
-vpath %.S $(SRC_DIR)
+SRC :=  $(shell find $(SRC_PATH) -name "*.c")
+OBJ := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
+DEP := $(patsubst $(SRC_DIR)/%.c, $(DEP_DIR)/%.d, $(SRC))
 
-SRC := $(shell find $(SRC_DIR) -type f -name "*" | grep -E -i ".\.(c|s)")
-HDR := $(shell find $(SRC_DIR) -type f -name "*" | grep -E -i ".\.(h)")
-OBJ := $(patsubst $(SRC_DIR)/%, $(SRC_DIR)/%.o, $(SRC))
+include $(DEP)
 
-$(TARGET_NAME).elf : $(OBJ)
-	$(CC) $(LDFLAGS) $(patsubst %, $(BLD_DIR)/%, $^) -o $(BLD_DIR)/$@
-	# $(OBJCOPY) -Oihex $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).hex
-	# $(OBJCOPY) -Obinary $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).bin
-	$(OBJDUMP) -D $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).dis
+.PHONY : all
+all : $(TARGET)
 
-$(OBJ) : %.o : % $(HDR)
-	mkdir -p $(dir $(BLD_DIR)/$@)
-	$(CC) -c $< $(CCFLAGS) -o $(BLD_DIR)/$@
+$(TARGET) : $(OBJ)
+	@echo $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+#	$(OBJCOPY) -Oihex $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).hex
+#	$(OBJCOPY) -Obinary $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).bin
+#	$(OBJDUMP) -D $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).dis
 
-all : $(TARGET_NAME).elf
+$(DEP_DIR)/%.d: $(SRC_DIR)/%.c
+	@echo "build *.d"
+	@mkdir -p $(dir $@)
+	$(CC) -MM $(CFLAGS) $< | sed 's,\($(notdir $*)\)\.o[ :]*,$(BLD_DIR)/$*.o $@ : ,g' > $@
+
+$(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
+	@echo "build *.o"
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY : clean
 clean :
 	rm -rf $(BLD_DIR)/$(SRC_DIR)
-
-.PHONY : clean_all
-clean_all :
-	-rm -rf $(BLD_DIR)
+	rm -rf $(DEP_DIR)
 
 .PHONY : download
 download :
@@ -80,3 +86,10 @@ download :
 .PHONY : gen
 gen :
 	wsl -e bear -- make -j12
+
+
+.PHONY : test
+test :
+	@echo "source sub SRC:" $(SRC)
+	@echo "source sub OBJ:" $(OBJ)
+	@echo "source sub DEP:" $(DEP)
