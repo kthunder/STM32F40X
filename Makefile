@@ -1,8 +1,8 @@
 # Modify names below
 SRC_DIR := ./src
 BLD_DIR := ./build
-OBJ_DIR := $(BLD_DIR)
-DEP_DIR	:= ./deps
+OBJ_DIR := $(BLD_DIR)/objs/src
+DEP_DIR	:= $(BLD_DIR)/deps/src
 ENV_DIR := ./env
 
 TARGET := $(BLD_DIR)/main.elf
@@ -43,53 +43,50 @@ CFLAGS += -I ./src/Drivers/CMSIS/Device/ST/STM32F1xx/Include
 
 LDFLAGS += -T $(ENV_DIR)/$(LD_FILE)
 # LDFLAGS += -nostartfiles -Xlinker -MMD -MP
-LDFLAGS += -Wl,--gc-sections,--print-memory-usage,-Map="$(BLD_DIR)/$(TARGET_NAME).map"
+LDFLAGS += -Wl,--gc-sections,--print-memory-usage,-Map="$(basename $(TARGET)).map"
 LDFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
 LDFLAGS += --specs=nosys.specs --specs=nano.specs
 
-SRC :=  $(shell find $(SRC_PATH) -name "*.c")
-OBJ := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
-DEP := $(patsubst $(SRC_DIR)/%.c, $(DEP_DIR)/%.d, $(SRC))
+SRC_C = $(shell find $(SRC_DIR) -name "*.c")
+SRC_S = $(shell find $(SRC_DIR) -name "*.s")
 
-include $(DEP)
+SRC := $(SRC_C) $(SRC_S)
+OBJ := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_C))
+OBJ += $(patsubst $(SRC_DIR)/%.s, $(OBJ_DIR)/%.o, $(SRC_S))
+DEP := $(patsubst $(SRC_DIR)/%.c, $(DEP_DIR)/%.d, $(SRC_C))
 
 .PHONY : all
 all : $(TARGET)
 
+include $(DEP)
+
 $(TARGET) : $(OBJ)
-	@echo $@
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
-#	$(OBJCOPY) -Oihex $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).hex
-#	$(OBJCOPY) -Obinary $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).bin
-#	$(OBJDUMP) -D $(BLD_DIR)/$(TARGET_NAME).elf > $(BLD_DIR)/$(TARGET_NAME).dis
+	$(CC) $(LDFLAGS) $^ -o $@
+#	$(OBJCOPY) -Oihex $(TARGET) > $(basename $(TARGET)).hex
+#	$(OBJCOPY) -Obinary $(TARGET) > $(basename $(TARGET)).bin
+#	$(OBJDUMP) -D $(TARGET) > $(basename $(TARGET)).dis
 
 $(DEP_DIR)/%.d: $(SRC_DIR)/%.c
-	@echo "build *.d"
 	@mkdir -p $(dir $@)
-	$(CC) -MM $(CFLAGS) $< | sed 's,\($(notdir $*)\)\.o[ :]*,$(BLD_DIR)/$*.o $@ : ,g' > $@
+	@$(CC) -MM $(CFLAGS) $< | sed 's,\($(notdir $*)\)\.o[ :]*,$(OBJ_DIR)/$*.o $@ : ,g' > $@
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c
-	@echo "build *.o"
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJ_DIR)/%.o : $(SRC_DIR)/%.s
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY : clean
 clean :
-	rm -rf $(BLD_DIR)/$(SRC_DIR)
-	rm -rf $(DEP_DIR)
+	-rm -rf $(DEP_DIR) $(OBJ_DIR)  $(BLD_DIR)
 
 .PHONY : download
 download :
 	make -j12
-	$(ENV_DIR)\openocd.cmd $(abspath $(BLD_DIR)/$(TARGET_NAME).elf)
+	$(ENV_DIR)\openocd.cmd $(abspath $(TARGET))
 
 .PHONY : gen
 gen :
 	wsl -e bear -- make -j12
-
-
-.PHONY : test
-test :
-	@echo "source sub SRC:" $(SRC)
-	@echo "source sub OBJ:" $(OBJ)
-	@echo "source sub DEP:" $(DEP)
