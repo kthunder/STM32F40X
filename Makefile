@@ -20,18 +20,11 @@ OBJCOPY  = $(CROSS_COMPILE)objcopy
 OBJDUMP  = $(CROSS_COMPILE)objdump
 
 CPU = cortex-m4
-ifeq ($(CPU), cortex-m3)
-	LD_FILE = STM32F103C6TX_FLASH.ld
-	BOARD = STM32F103x6
-else
-	LD_FILE = STM32F407VETX_FLASH.ld
-	BOARD = STM32F407xx
-endif
 
 CFLAGS := -Wall -O0 -g
 CFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
 CFLAGS += -ffunction-sections -fdata-sections -fno-common -fmessage-length=0 -fomit-frame-pointer
-CFLAGS += -D $(BOARD)
+CFLAGS += -DSTM32F407xx
 
 CFLAGS += -I ./src/Core/Inc
 CFLAGS += -I ./src/Core/SpiFlash
@@ -41,7 +34,7 @@ CFLAGS += -I ./src/MinRTOS/Inc
 CFLAGS += -I ./src/Drivers/CMSIS/Include
 CFLAGS += -I ./src/Drivers/CMSIS/Device/ST/STM32F1xx/Include
 
-LDFLAGS += -T $(ENV_DIR)/$(LD_FILE)
+LDFLAGS += -T $(ENV_DIR)/STM32F407VETX_FLASH.ld
 # LDFLAGS += -nostartfiles -Xlinker -MMD -MP
 LDFLAGS += -Wl,--gc-sections,--print-memory-usage,-Map="$(basename $(TARGET)).map"
 LDFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
@@ -62,9 +55,9 @@ include $(DEP)
 
 $(TARGET) : $(OBJ)
 	$(CC) $(LDFLAGS) $^ -o $@
-#	$(OBJCOPY) -Oihex $(TARGET) > $(basename $(TARGET)).hex
+	$(OBJCOPY) -Oihex $(TARGET) > $(basename $(TARGET)).hex
 #	$(OBJCOPY) -Obinary $(TARGET) > $(basename $(TARGET)).bin
-#	$(OBJDUMP) -D $(TARGET) > $(basename $(TARGET)).dis
+	$(OBJDUMP) -D $(TARGET) > $(basename $(TARGET)).dis
 
 $(DEP_DIR)/%.d: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
@@ -85,8 +78,9 @@ clean :
 .PHONY : download
 download :
 	make -j12
-	$(ENV_DIR)\openocd.cmd $(abspath $(TARGET))
+	openocd.exe -f "$(ENV_DIR)/stm32f4discovery.cfg" -c "program $(TARGET)" -c reset -c shutdown
 
 .PHONY : gen
 gen :
+	make clean
 	wsl -e bear -- make -j12

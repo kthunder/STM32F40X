@@ -59,14 +59,14 @@ static uint32_t W25Qx_WriteEnable(void)
     return 0;
 }
 
-static uint32_t W25Qx_WriteDisable(void)
-{
-    uint8_t cmd = W25X_WriteDisable;
-    ENABLE_CS();
-    SPI_Transmit(SPI1, &cmd, 1);
-    DISABLE_CS();
-    return 0;
-}
+// static uint32_t W25Qx_WriteDisable(void)
+// {
+//     uint8_t cmd = W25X_WriteDisable;
+//     ENABLE_CS();
+//     SPI_Transmit(SPI1, &cmd, 1);
+//     DISABLE_CS();
+//     return 0;
+// }
 
 static void W25Qx_WaiteBusy(void)
 {

@@ -13,23 +13,6 @@
 
 #include "MinRTOS.h"
 
-int main()
-{
-    // LedInit();
-    UartInit();
-
-    test_spi();
-
-    while (1)
-    {
-        delay_ms(3000);
-        // GPIO_TogglePin(GPIOA, GPIO_Pin_7 | GPIO_Pin_6);
-        // log_info("heart beat!\n");
-    }
-
-    // vTaskStartScheduler();
-}
-
 /* private func*/
 void LedInit()
 {
@@ -55,4 +38,21 @@ void UartInit()
     };
     GPIO_Init(GPIOA, &usart1_config);
     USART_Init(USART1);
+}
+
+int main()
+{
+    // LedInit();
+    UartInit();
+
+    // test_spi();
+
+    while (1)
+    {
+        delay_ms(3000);
+        // GPIO_TogglePin(GPIOA, GPIO_Pin_7 | GPIO_Pin_6);
+        log_info("heart beat!\n");
+    }
+
+    // vTaskStartScheduler();
 }

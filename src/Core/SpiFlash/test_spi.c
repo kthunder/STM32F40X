@@ -16,8 +16,8 @@ void set_buffer()
 
 void test_spi()
 {
-    uint8_t state = 0;
-    uint8_t flashId = 0;
+    // uint8_t state = 0;
+    // uint8_t flashId = 0;
     set_buffer();
     W25Qx_Init();
 
