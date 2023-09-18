@@ -49,8 +49,8 @@ int main()
 
     while (1)
     {
-        delay_ms(3000);
-        // GPIO_TogglePin(GPIOA, GPIO_Pin_7 | GPIO_Pin_6);
+        delay_ms(1000);
+        GPIO_TogglePin(GPIOA, GPIO_Pin_7 | GPIO_Pin_6);
         log_info("heart beat!\n");
     }
 

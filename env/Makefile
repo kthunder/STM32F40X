@@ -34,8 +34,7 @@ CFLAGS += -I ./src/MinRTOS/Inc
 CFLAGS += -I ./src/Drivers/CMSIS/Include
 CFLAGS += -I ./src/Drivers/CMSIS/Device/ST/STM32F1xx/Include
 
-# LDFLAGS += -T $(ENV_DIR)/STM32F407VETX_FLASH.ld
-LDFLAGS += -T $(ENV_DIR)/STM32F401RCTX_FLASH.ld
+LDFLAGS += -T $(ENV_DIR)/STM32F407VETX_FLASH.ld
 # LDFLAGS += -nostartfiles -Xlinker -MMD -MP
 LDFLAGS += -Wl,--gc-sections,--print-memory-usage,-Map="$(basename $(TARGET)).map"
 LDFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
@@ -56,9 +55,9 @@ include $(DEP)
 
 $(TARGET) : $(OBJ)
 	$(CC) $(LDFLAGS) $^ -o $@
-	$(OBJCOPY) -O ihex $(TARGET) > $(basename $(TARGET)).hex
-#	$(OBJCOPY) -O binary $(TARGET) > $(basename $(TARGET)).bin
-#	$(OBJDUMP) -D $(TARGET) > $(basename $(TARGET)).dis
+	$(OBJCOPY) -Oihex $(TARGET) > $(basename $(TARGET)).hex
+#	$(OBJCOPY) -Obinary $(TARGET) > $(basename $(TARGET)).bin
+	$(OBJDUMP) -D $(TARGET) > $(basename $(TARGET)).dis
 
 $(DEP_DIR)/%.d: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
