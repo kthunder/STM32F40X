@@ -56,9 +56,9 @@ include $(DEP)
 
 $(TARGET) : $(OBJ)
 	$(CC) $(LDFLAGS) $^ -o $@
-	$(OBJCOPY) -O ihex $(TARGET) > $(basename $(TARGET)).hex
-#	$(OBJCOPY) -O binary $(TARGET) > $(basename $(TARGET)).bin
-#	$(OBJDUMP) -D $(TARGET) > $(basename $(TARGET)).dis
+	$(OBJCOPY) $(TARGET) -O ihex $(basename $(TARGET)).hex
+	$(OBJCOPY) $(TARGET) -O binary $(basename $(TARGET)).bin
+	$(OBJDUMP) -d $(TARGET) > $(basename $(TARGET)).dis
 
 $(DEP_DIR)/%.d: $(SRC_DIR)/%.c
 	@mkdir -p $(dir $@)
@@ -74,7 +74,7 @@ $(OBJ_DIR)/%.o : $(SRC_DIR)/%.s
 
 .PHONY : clean
 clean :
-	-rm -rf $(DEP_DIR) $(OBJ_DIR)  $(BLD_DIR)
+	-rm -rf $(DEP_DIR) $(OBJ_DIR)
 
 .PHONY : download
 download :
