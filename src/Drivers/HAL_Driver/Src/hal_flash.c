@@ -154,7 +154,7 @@ uint32_t FLASH_Init()
     SET_BIT(FLASH->ACR, FLASH_ACR_ICEN);
     SET_BIT(FLASH->ACR, FLASH_ACR_DCEN);
     // set flash latency
-    SET_BIT(FLASH->ACR, FLASH_ACR_LATENCY_5WS);
+    SET_BIT(FLASH->ACR, FLASH_ACR_LATENCY_2WS);
     return HAL_OK;
 }
 

@@ -19,7 +19,7 @@ uint32_t HAL_GetUsTick_Prv()
         SET_BIT(DWT->CTRL, DWT_CTRL_CYCCNTENA_Msk);
     }
 
-    return DWT->CYCCNT / 168;
+    return DWT->CYCCNT / 64;
 }
 
 // TODO : too short
