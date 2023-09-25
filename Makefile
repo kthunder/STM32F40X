@@ -44,6 +44,9 @@ LDFLAGS += --specs=nosys.specs --specs=nano.specs
 SRC_C = $(shell find $(SRC_DIR) -name "*.c")
 SRC_S = $(shell find $(SRC_DIR) -name "*.s")
 
+# exclude files
+# SRC := $(filter-out src/app/QspiFlash/%, $(SRC))
+
 SRC := $(SRC_C) $(SRC_S)
 OBJ := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_C))
 OBJ += $(patsubst $(SRC_DIR)/%.s, $(OBJ_DIR)/%.o, $(SRC_S))
