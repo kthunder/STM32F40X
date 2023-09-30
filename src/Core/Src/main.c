@@ -64,5 +64,5 @@ int main() {
     log_info("heart beat!\n");
   }
 
-  // vTaskStartScheduler();
+  vTaskStartScheduler();
 }
