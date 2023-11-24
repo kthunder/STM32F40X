@@ -57,12 +57,11 @@ int main() {
 
   // test_spi();
 
-  while (1) {
-    
-    delay_ms(1000);
-    GPIO_TogglePin(GPIOC, GPIO_Pin_13);
-    log_info("heart beat!\n");
-  }
+  // while (1) {
+  //   delay_ms(1000);
+  //   GPIO_TogglePin(GPIOC, GPIO_Pin_13);
+  //   log_info("heart beat!\n");
+  // }
 
   vTaskStartScheduler();
 }

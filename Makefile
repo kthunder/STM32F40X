@@ -5,7 +5,7 @@ OBJ_DIR := $(BLD_DIR)/objs/src
 DEP_DIR	:= $(BLD_DIR)/deps/src
 ENV_DIR := ./env
 
-TARGET := $(BLD_DIR)/main.elf
+TARGET := $(BLD_DIR)/$(notdir $(CURDIR)).elf
 
 CROSS_COMPILE = arm-none-eabi-
 AS  = $(CROSS_COMPILE)as
