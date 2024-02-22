@@ -49,19 +49,30 @@ void UartInit() {
   GPIO_Init(GPIOA, &usart1_config);
   USART_Init(USART1);
 }
+void ItmInit() {
+  GPIO_InitTypeDef itm_config = {
+      .pin = GPIO_Pin_3,
+      .mode = GPIO_MODE_AF_OUT,
+      .otype = GPIO_OTYPE_PP,
+      .speed = GPIO_SPEED_FREQ_HIGH,
+      .pupd = GPIO_PUPD_PULL_UP,
+      // .af = GPIO_AF_7,
+  };
+  GPIO_Init(GPIOB, &itm_config);
+}
 
 int main() {
   LedInit();
   McoInit();
   UartInit();
-
+  // ItmInit();
   // test_spi();
 
-  // while (1) {
-  //   delay_ms(1000);
-  //   GPIO_TogglePin(GPIOC, GPIO_Pin_13);
-  //   log_info("heart beat!\n");
-  // }
+  while (1) {
+    delay_ms(1000);
+    GPIO_TogglePin(GPIOC, GPIO_Pin_13);
+    log_info("heart beat!\n");
+  }
 
-  vTaskStartScheduler();
+  // vTaskStartScheduler();
 }
