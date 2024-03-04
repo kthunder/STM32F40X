@@ -59,11 +59,12 @@ class Stream:
             self.add_char(c)
             
     def _output(self, s):
-        print(s)
         if self.tcl_socket is not None:
             self.tcl_socket.sendall(b'puts "' + s.encode('utf-8') + b'"\r\n\x1a')
-        
-        
+        print("_output____________________"+s)
+        while 1:
+            pass
+
 class StreamManager:
     """
     Manages up to 32 byte streams.
@@ -92,12 +93,17 @@ class StreamManager:
         parse_itm_bytes.
         
         """
+        print(line)
         if (line.startswith(b'type target_trace data ') and 
             line.endswith(b'\r\n')
             ):
             itm_bytes = int(line[23:-2],16).to_bytes(len(line[23:-2])//2,
                                                byteorder='big')
             self.parse_itm_bytes(itm_bytes)
+            # print(len(line[23:-2]))
+            # print(itm_bytes)
+            # while(1):
+            #     pass
                     
     def parse_itm_bytes(self, bstring):
         """
@@ -142,9 +148,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as tcl_socket:
     
     # Create a stream manager and add three streams
     streams = StreamManager()
-    streams.add_stream(Stream(0, '', tcl_socket))
-    streams.add_stream(Stream(1, 'WARNING: '))
-    streams.add_stream(Stream(2, 'ERROR: ', tcl_socket))
+    streams.add_stream(Stream(0, ''))
+    # streams.add_stream(Stream(0, '', tcl_socket))
+    # streams.add_stream(Stream(1, 'WARNING: '))
+    # streams.add_stream(Stream(2, 'ERROR: ', tcl_socket))
     
     # Enable the tcl_trace output
     tcl_socket.sendall(b'tcl_trace on\n\x1a')

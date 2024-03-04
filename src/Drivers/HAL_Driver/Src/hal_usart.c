@@ -1,5 +1,6 @@
 #include "stm32f4xx.h"
 #include "hal_usart.h"
+#include "hal_def.h"
 
 void USART_Init(USART_TypeDef *USARTx)
 {
@@ -28,5 +29,8 @@ uint32_t USART_Transmit(USART_TypeDef *USARTx, uint8_t *pData, uint16_t nSize)
 // todo
 uint32_t USART_Receive(USART_TypeDef *USARTx, uint8_t *pData, uint16_t nSize)
 {
+    UNUSED(USARTx);
+    UNUSED(pData);
+    UNUSED(nSize);
     return 0;
 }

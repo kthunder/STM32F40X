@@ -122,7 +122,7 @@ int log_add_callback(log_LogFn fn, void *udata, int level)
 // 日志输出函数
 void log_log(int level, const char *file_name, int line, const char *fmt, ...)
 {
-    time_t t = time(NULL);
+    time_t t = 0;
 
     log_Event ev = {
         .fmt = fmt,

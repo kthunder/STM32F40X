@@ -9,6 +9,7 @@
 #define LOG_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <time.h>

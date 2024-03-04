@@ -21,7 +21,7 @@ uint32_t HAL_GetTick();
 /* Exported functions ------------------------------------------------------- */
 static inline void assert_failed(uint8_t *file, uint32_t line)
 {
-    printf("Wrong parameters value: file %s on line %lu\n", file, line);
+    printf("Wrong parameters value: file %s on line %u\n", file, line);
 
     while (1)
     {

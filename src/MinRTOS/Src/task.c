@@ -6,6 +6,8 @@
 #include "tools.h"
 #define configMAX_PRIORITIES 5
 
+void vTaskDelay(const TickType_t xTicksToDelay);
+
 TCB_t *pxCurrentTCB;
 List_t pxReadyTaskList[configMAX_PRIORITIES];
 portSTACK_TYPE taskStack[512];
@@ -123,14 +125,14 @@ void PendSV_Handler()
         :);
 }
 
-void SysTick_Handler()
-{
-    portDIASBLE_INTERUPTS();
+// void SysTick_Handler()
+// {
+//     portDIASBLE_INTERUPTS();
 
-    xTaskIncremmentTick();
+//     xTaskIncremmentTick();
 
-    portENABLE_INTERUPTS();
-}
+//     portENABLE_INTERUPTS();
+// }
 
 void prvStartFirstTask()
 {
@@ -289,6 +291,7 @@ void vTaskSwitchContext()
 
 void task1(void *param)
 {
+    (void)param;
     while (1)
     {
         GPIO_SetBits(GPIOA, GPIO_Pin_6);
@@ -299,6 +302,7 @@ void task1(void *param)
 }
 void task2(void *param)
 {
+    (void)param;
     while (1)
     {
         GPIO_ResetBits(GPIOA, GPIO_Pin_7);
@@ -331,6 +335,9 @@ void vTaskStartScheduler()
     TaskHandle_t handle0 = xTaskCreateStatic(prvIdleTask, "IDLE", 512, NULL, IdleTaskStack, &IdleTaskTCB);
     TaskHandle_t handle1 = xTaskCreateStatic(task1, "TASK1", 512, NULL, taskStack, &task1TCB);
     TaskHandle_t handle2 = xTaskCreateStatic(task2, "TASK2", 512, NULL, taskStack2, &task2TCB);
+    (void)handle0;
+    (void)handle1;
+    (void)handle2;
     vListInsert(&pxReadyTaskList[0], &(task1TCB.xStateListItem));
     vListInsert(&pxReadyTaskList[0], &(task2TCB.xStateListItem));
     vListInsert(&pxReadyTaskList[0], &(IdleTaskTCB.xStateListItem));

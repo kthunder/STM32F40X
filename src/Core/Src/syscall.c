@@ -1,57 +1,35 @@
-#include <sys/stat.h>
-#include <stdlib.h>
+// #include <sys/stat.h>
 #include <errno.h>
-#include <stdio.h>
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
-#include <sys/time.h>
-#include <sys/times.h>
 
 #include "hal_usart.h"
 
 __attribute__((weak)) int __io_getchar()
 {
     uint8_t ch = 0;
-    USART_Receive(USART1, &ch, 1);
+    // USART_Receive(USART1, &ch, 1);
     return ch;
 }
 
 __attribute__((weak)) int __io_putchar(int ch)
 {
-    USART_Transmit(USART1, (uint8_t *)&ch, 1);
+    // USART_Transmit(USART1, (uint8_t *)&ch, 1);
     return ITM_SendChar(ch);
 }
 
 char *__env[1] = {0};
 char **environ = __env;
 
-/* Functions */
-void initialise_monitor_handles()
-{
-}
+#ifndef __clang__
+#define FUNC_PREFIX(string) _##string
+#else
+#define FUNC_PREFIX(string) string
+#endif
 
-int _getpid(void)
-{
-    return 1;
-}
-
-int _kill(int pid, int sig)
-{
-    (void)pid;
-    (void)sig;
-    errno = EINVAL;
-    return -1;
-}
-
-void _exit(int status)
-{
-    _kill(status, -1);
-    while (1)
-    {
-    } /* Make sure we hang here */
-}
-
-__attribute__((weak)) int _read(int file, char *ptr, int len)
+__attribute__((weak)) int FUNC_PREFIX(read)(int file, char *ptr, int len)
 {
     (void)file;
     int DataIdx;
@@ -64,7 +42,7 @@ __attribute__((weak)) int _read(int file, char *ptr, int len)
     return len;
 }
 
-__attribute__((weak)) int _write(int file, char *ptr, int len)
+__attribute__((weak)) int FUNC_PREFIX(write)(int file, char *ptr, int len)
 {
     (void)file;
     int DataIdx;
@@ -76,87 +54,41 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
     return len;
 }
 
-int _close(int file)
+int FUNC_PREFIX(close)(int file)
 {
     (void)file;
     return -1;
 }
 
-int _fstat(int file, struct stat *st)
-{
-    (void)file;
-    st->st_mode = S_IFCHR;
-    return 0;
-}
-
-int _isatty(int file)
-{
-    (void)file;
-    return 1;
-}
-
-int _lseek(int file, int ptr, int dir)
-{
-    (void)file;
-    (void)ptr;
-    (void)dir;
-    return 0;
-}
-
-int _open(char *path, int flags, ...)
-{
-    (void)path;
-    (void)flags;
-    /* Pretend like we always fail */
-    return -1;
-}
-
-int _wait(int *status)
+void _exit(int status)
 {
     (void)status;
-    errno = ECHILD;
+    while (1)
+    {
+    } /* Make sure we hang here */
+}
+
+int remove(const char *path)
+{
+    (void)path;
     return -1;
 }
 
-int _unlink(char *name)
+void *sbrk(size_t incr)
 {
-    (void)name;
-    errno = ENOENT;
-    return -1;
-}
-
-int _times(struct tms *buf)
-{
-    (void)buf;
-    return -1;
-}
-
-int _stat(char *file, struct stat *st)
-{
-    (void)file;
-    st->st_mode = S_IFCHR;
-    return 0;
-}
-
-int _link(char *old, char *new)
-{
-    (void)old;
-    (void)new;
-    errno = EMLINK;
-    return -1;
-}
-
-int _fork(void)
-{
-    errno = EAGAIN;
-    return -1;
-}
-
-int _execve(char *name, char **argv, char **env)
-{
-    (void)name;
-    (void)argv;
-    (void)env;
-    errno = ENOMEM;
-    return -1;
+    extern char _heap_start;
+    extern char _heap_end;
+    (void)incr;
+    void *ret = 0;
+    static char *heap_top = &_heap_start;
+    char *new_heap_top = heap_top + incr;
+    if (new_heap_top > &_heap_end)
+    {
+        return (void *)(-1);
+    }
+    if (new_heap_top < &_heap_start)
+        abort();
+    ret = (void *)heap_top;
+    heap_top = new_heap_top;
+    return ret;
 }
