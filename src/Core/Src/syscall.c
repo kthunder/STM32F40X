@@ -1,4 +1,6 @@
-// #include <sys/stat.h>
+#ifndef __clang__
+#include <sys/stat.h>
+#endif
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -74,7 +76,7 @@ int remove(const char *path)
     return -1;
 }
 
-void *sbrk(size_t incr)
+void *FUNC_PREFIX(sbrk)(size_t incr)
 {
     extern char _heap_start;
     extern char _heap_end;
@@ -92,3 +94,39 @@ void *sbrk(size_t incr)
     heap_top = new_heap_top;
     return ret;
 }
+
+#ifndef __clang__
+int _kill(int pid, int sig)
+{
+    (void)pid;
+    (void)sig;
+    errno = EINVAL;
+    return -1;
+}
+
+int _getpid(void)
+{
+    return 1;
+}
+
+int _lseek(int file, int ptr, int dir)
+{
+    (void)file;
+    (void)ptr;
+    (void)dir;
+    return 0;
+}
+
+int _fstat(int file, struct stat *st)
+{
+    (void)file;
+    st->st_mode = S_IFCHR;
+    return 0;
+}
+
+int _isatty(int file)
+{
+    (void)file;
+    return 1;
+}
+#endif
