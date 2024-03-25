@@ -93,3 +93,6 @@ https://wiki.segger.com/J-Link_SWO_Viewer
 	]
 }
 ```
+
+
+cmake -S . -B build -G "MinGW Makefiles" ; cmake --build build

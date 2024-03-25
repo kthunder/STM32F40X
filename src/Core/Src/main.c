@@ -167,6 +167,6 @@ int main()
         // ITM_SendChar('a');
     }
 
-    // vTaskStartScheduler();
+    vTaskStartScheduler();
 }
 // #endif

@@ -7,7 +7,10 @@ ENV_DIR := ./env
 
 TARGET := $(BLD_DIR)/$(notdir $(CURDIR)).elf
 
-COMPILER = LLVM
+OPENOCD = "C:\ENV\EmbeddedToolChain\OpenOCD\bin\openocd\bin\openocd.exe"
+OPENOCD_ARGS = -f "./env/stm32f4discovery.cfg"
+
+COMPILER = GNU
 # cpu arch
 ARCH = armv7e-m
 # cpu core
@@ -119,8 +122,11 @@ clean :
 
 .PHONY : download
 download :
-	make -j12
-	openocd.exe -f "$(ENV_DIR)/stm32f4discovery.cfg" -c "program $(TARGET)" -c reset -c shutdown
+	$(OPENOCD) $(OPENOCD_ARGS) -c "program $(TARGET)" -c reset -c shutdown
+
+.PHONY : openocd
+openocd :
+	$(OPENOCD) $(OPENOCD_ARGS) -c init -c halt
 
 .PHONY : gen
 gen :
