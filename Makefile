@@ -7,10 +7,10 @@ ENV_DIR := ./env
 
 TARGET := $(BLD_DIR)/$(notdir $(CURDIR)).elf
 
-OPENOCD = "C:\ENV\EmbeddedToolChain\OpenOCD\bin\openocd\bin\openocd.exe"
+OPENOCD = "C:\ENV\EmbeddedToolChain\OpenOCD\bin\openocd.exe"
 OPENOCD_ARGS = -f "./env/stm32f4discovery.cfg"
 
-COMPILER = GNU
+COMPILER = LLVM
 # cpu arch
 ARCH = armv7e-m
 # cpu core
@@ -29,7 +29,7 @@ STRIP    = $(CROSS_COMPILE)strip
 OBJCOPY  = $(CROSS_COMPILE)objcopy
 OBJDUMP  = $(CROSS_COMPILE)objdump
 
-CFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork
+CFLAGS += -mcpu=$(CPU) -mthumb -mthumb-interwork --specs=nosys.specs --specs=nano.specs
 
 ASFLAGS := $(CFLAGS)
 LDFLAGS += -Wl,--print-memory-usage
@@ -54,13 +54,15 @@ CFLAGS :=	-march=$(ARCH) \
 			--target=armv7m-none-eabi \
 			-mfloat-abi=hard \
 			-mfpu=vfpv4-d16 \
-			-mthumb \
+			-mthumb
 
 
 ASFLAGS :=	-march=$(ARCH) \
 			-mcpu=$(CPU) \
 			--target=armv7m-none-eabi \
 			-mfpu=vfpv4-d16
+
+LDFLAGS += --target=armv7m-none-eabi
 endif
 ## common flag
 CFLAGS += -g3 -Os  -Wall -Wextra -Wcast-align -std=c99

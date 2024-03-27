@@ -151,11 +151,11 @@ void configure_watchpoint()
 int main()
 {
     // uint32_t(*ROM_TABLE)[12] = (uint32_t (*)[12])0xE00FF000;
-    configure_tracing();
+    // configure_tracing();
     // configure_watchpoint();
     LedInit();
     // McoInit();
-    // UartInit();
+    UartInit();
     // ItmInit();
     // test_spi();
 
@@ -163,10 +163,10 @@ int main()
     {
         delay_ms(1000);
         GPIO_TogglePin(GPIOC, GPIO_Pin_13);
-        log_info("heart beat!");
-        // ITM_SendChar('a');
+        // log_info("heart beat!");
+        // printf("heart beat!\r\n");
     }
 
-    vTaskStartScheduler();
+    // vTaskStartScheduler();
 }
 // #endif

@@ -165,13 +165,13 @@ SECTIONS
   ._user_heap_stack :
   {
     . = ALIGN(8);
-    PROVIDE ( _heap_start = . );
+    PROVIDE ( __heap_start = . );
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
-    PROVIDE ( _heap_end = . );
+    PROVIDE ( __heap_end = . );
   } >RAM
 
   /* Remove information from the compiler libraries */

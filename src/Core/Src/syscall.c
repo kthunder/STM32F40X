@@ -5,23 +5,38 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "hal_usart.h"
 
-__attribute__((weak)) int __io_getchar()
+// commom functions
+__attribute__((weak)) int __io_getchar(FILE *file)
 {
-    uint8_t ch = 0;
-    // USART_Receive(USART1, &ch, 1);
-    return ch;
+    (void)file;
+    // USART_Receive(USART1, &ch, 1);// un support
+    return 0;
 }
 
-__attribute__((weak)) int __io_putchar(int ch)
+__attribute__((weak)) int __io_putchar(char ch, FILE *file)
 {
-    // USART_Transmit(USART1, (uint8_t *)&ch, 1);
-    return ITM_SendChar(ch);
+    (void)file;
+    USART_Transmit(USART1, (uint8_t *)&ch, 1);
+    // ITM_SendChar(ch);
+    return 1;
 }
 
+//only for llvm
+#if defined(__clang_major__)&&(__clang_major__ == 17)
+/* Redirect sdtio as per https://github.com/picolibc/picolibc/blob/main/doc/os.md */
+static FILE __stdio = FDEV_SETUP_STREAM(__io_putchar, __io_getchar, NULL, _FDEV_SETUP_RW);
+FILE *const stdin = &__stdio;
+__strong_reference(stdin, stdout);
+__strong_reference(stdin, stderr);
+#endif
+
+
+#ifdef __GNUC__
 char *__env[1] = {0};
 char **environ = __env;
 
@@ -33,26 +48,15 @@ char **environ = __env;
 
 __attribute__((weak)) int FUNC_PREFIX(read)(int file, char *ptr, int len)
 {
-    (void)file;
-    int DataIdx;
-
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
-    {
-        *ptr++ = __io_getchar();
-    }
-
+    for (int DataIdx = 0; DataIdx < len; DataIdx++)
+        *ptr++ = __io_getchar((FILE *)file);
     return len;
 }
 
 __attribute__((weak)) int FUNC_PREFIX(write)(int file, char *ptr, int len)
 {
-    (void)file;
-    int DataIdx;
-
-    for (DataIdx = 0; DataIdx < len; DataIdx++)
-    {
-        __io_putchar(*ptr++);
-    }
+    for (int  DataIdx = 0; DataIdx < len; DataIdx++)
+        __io_putchar(*ptr++, (FILE *)file);
     return len;
 }
 
@@ -78,22 +82,23 @@ int remove(const char *path)
 
 void *FUNC_PREFIX(sbrk)(size_t incr)
 {
-    extern char _heap_start;
-    extern char _heap_end;
+    extern char __heap_start;
+    extern char __heap_end;
     (void)incr;
     void *ret = 0;
-    static char *heap_top = &_heap_start;
+    static char *heap_top = &__heap_start;
     char *new_heap_top = heap_top + incr;
-    if (new_heap_top > &_heap_end)
+    if (new_heap_top > &__heap_end)
     {
         return (void *)(-1);
     }
-    if (new_heap_top < &_heap_start)
+    if (new_heap_top < &__heap_start)
         abort();
     ret = (void *)heap_top;
     heap_top = new_heap_top;
     return ret;
 }
+#endif
 
 #ifndef __clang__
 int _kill(int pid, int sig)

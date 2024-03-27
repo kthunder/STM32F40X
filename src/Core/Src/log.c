@@ -118,7 +118,6 @@ int log_add_callback(log_LogFn fn, void *udata, int level)
     }
     return -1;
 }
-
 // 日志输出函数
 void log_log(int level, const char *file_name, int line, const char *fmt, ...)
 {
@@ -128,7 +127,7 @@ void log_log(int level, const char *file_name, int line, const char *fmt, ...)
         .fmt = fmt,
         .file_name = file_name,
         .time = localtime(&t),
-        .udata = stderr,
+        .udata = stdout,
         .line = line,
         .level = level,
     };
