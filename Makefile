@@ -10,7 +10,7 @@ TARGET := $(BLD_DIR)/$(notdir $(CURDIR)).elf
 OPENOCD = "C:\ENV\EmbeddedToolChain\OpenOCD\bin\openocd.exe"
 OPENOCD_ARGS = -f "./env/stm32f4discovery.cfg"
 
-COMPILER = LLVM
+COMPILER = GNU
 # cpu arch
 ARCH = armv7e-m
 # cpu core
