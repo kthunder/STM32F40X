@@ -10,7 +10,7 @@ TARGET := $(BLD_DIR)/$(notdir $(CURDIR)).elf
 OPENOCD = "C:\ENV\EmbeddedToolChain\OpenOCD\bin\openocd.exe"
 OPENOCD_ARGS = -f "./env/stm32f4discovery.cfg"
 
-COMPILER = GNU
+COMPILER = LLVM
 # cpu arch
 ARCH = armv7e-m
 # cpu core
@@ -79,7 +79,7 @@ CFLAGS += -I ./src/Drivers/CMSIS/Device/ST/STM32F1xx/Include
 ### definitions
 CFLAGS += -DSTM32F401xC
 
-LDFLAGS += -march=$(ARCH) -mcpu=$(CPU)
+LDFLAGS += -march=$(ARCH) -mcpu=$(CPU)  -lcrt0
 LDFLAGS += -T $(ENV_DIR)/STM32F401RCTX_FLASH.ld
 LDFLAGS += -Wl,--gc-sections,-Map="$(basename $(TARGET)).map"
 
@@ -101,7 +101,7 @@ all : $(TARGET)
 include $(DEP)
 
 $(TARGET) : $(OBJ)
-	$(CC) $(LDFLAGS) $^ -o $@
+	lld $(LDFLAGS) $^ -o $@
 	$(OBJCOPY) $(TARGET) -O ihex $(basename $(TARGET)).hex
 	$(OBJCOPY) $(TARGET) -O binary $(basename $(TARGET)).bin
 	$(OBJDUMP) -d $(TARGET) > $(basename $(TARGET)).dis

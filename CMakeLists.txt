@@ -13,7 +13,7 @@ set(CMAKE_BUILD_PARALLEL_LEVEL 12)
 set(COMPILER GNU)
 
 if(COMPILER STREQUAL GNU)
-    set(COMPILER_PATH        C:/IDE/ThinkTechStudio/toolchain/xpack-arm-none-eabi-gcc-10.3.1-2.3/bin)
+    set(COMPILER_PATH        C:/ENV/EmbeddedToolChain/xpack-arm-none-eabi-gcc-10.3.1-2.3/bin)
     set(CMAKE_C_COMPILER     ${COMPILER_PATH}/arm-none-eabi-gcc.exe)
     set(CMAKE_CXX_COMPILER   ${COMPILER_PATH}/arm-none-eabi-g++.exe)
     set(CMAKE_ASM_COMPILER   ${COMPILER_PATH}/arm-none-eabi-gcc.exe)
@@ -22,7 +22,7 @@ if(COMPILER STREQUAL GNU)
     set(CMAKE_OBJDUMP        ${COMPILER_PATH}/arm-none-eabi-objdump.exe)
     set(SIZE                 ${COMPILER_PATH}/arm-none-eabi-size.exe)
 elseif(COMPILER STREQUAL LLVM)
-    set(COMPILER_PATH        C:/IDE/ThinkTechStudio/toolchain/LLVMEmbeddedToolchainForArm-17.0.1-Windows-x86_64/bin)
+    set(COMPILER_PATH        C:/ENV/EmbeddedToolChain/LLVMEmbeddedToolchainForArm/bin)
     set(CMAKE_C_COMPILER     ${COMPILER_PATH}/clang.exe)
     set(CMAKE_CXX_COMPILER   ${COMPILER_PATH}/clang++.exe)
     set(CMAKE_ASM_COMPILER   ${COMPILER_PATH}/clang.exe)
@@ -49,16 +49,25 @@ get_filename_component(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${PROJECT_DIR} C ASM)
 set(CMAKE_C_STANDARD 99)
 # add header files
-include_directories(src/app/inc)
+include_directories(src/Core/Inc)
+include_directories(src/Core/RTT)
+include_directories(src/Core/SpiFlash)
 include_directories(src/Drivers/CMSIS/Device/ST/STM32F1xx/Include)
 include_directories(src/Drivers/CMSIS/Include)
 include_directories(src/Drivers/HAL_Driver/Inc)
-include_directories(src/threadx/common/inc)
-include_directories(src/threadx/ports/inc)
+include_directories(src/MinRTOS/Inc)
+
 # add source files
-file(GLOB_RECURSE SOURCES "src/*.*")
+file(GLOB_RECURSE SOURCES "src/*.*" "src/plugins/*.*" )
+# foreach(var ${SOURCES})
+#     message("SOURCES = ${var}")
+# endforeach()
+# exclued source files
+file(GLOB_RECURSE EXCLUDE_SOURCES )
+list(REMOVE_ITEM SOURCES ${EXCLUDE_SOURCES})
+
 # add definitions
-add_definitions( -DSTM32F401xC )
+add_definitions(-DSTM32F401xC)
 
 #Uncomment for hardware floating point
 #add_compile_definitions(ARM_MATH_CM4;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING)
@@ -128,4 +137,3 @@ add_custom_command(TARGET ${PROJECT_NAME}.elf POST_BUILD
         COMMENT "Building ${HEX_FILE}
 Building ${BIN_FILE}
 Building ${DIS_FILE}")
-
