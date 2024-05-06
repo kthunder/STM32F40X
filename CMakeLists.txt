@@ -49,13 +49,13 @@ get_filename_component(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${PROJECT_DIR} C ASM)
 set(CMAKE_C_STANDARD 99)
 # add header files
-include_directories(src/Core/Inc)
+include_directories(src/app/Inc)
 include_directories(src/Core/RTT)
-include_directories(src/Core/SpiFlash)
 include_directories(src/Drivers/CMSIS/Device/ST/STM32F1xx/Include)
 include_directories(src/Drivers/CMSIS/Include)
 include_directories(src/Drivers/HAL_Driver/Inc)
-include_directories(src/MinRTOS/Inc)
+include_directories(src/threadx/common/inc)
+include_directories(src/threadx/ports/inc)
 
 # add source files
 file(GLOB_RECURSE SOURCES "src/*.*" "src/plugins/*.*" )

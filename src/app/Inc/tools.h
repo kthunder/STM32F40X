@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include "stm32f4xx.h"
 
 #define GET_BIT(value, bit) ((value) & (1 << (bit)))  // 读取指定位
 #define CPL_BIT(value, bit) ((value) ^= (1 << (bit))) // 取反指定位
