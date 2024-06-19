@@ -34,6 +34,8 @@
 //                      3, 3, TX_NO_TIME_SLICE, TX_AUTO_START);
 // }
 
+extern int misc_init();
+
 int main()
 {
     misc_init();
@@ -42,7 +44,9 @@ int main()
         GPIO_TogglePin(GPIOC, GPIO_Pin_13);
         // log_info("heart beat!");
         printf("heart beat!\n");
-        // delay_ms(1000);
+
+        for (size_t i = 0; i < 0xFFFFFF; i++)
+            ;
     }
     // tx_kernel_enter();
 }

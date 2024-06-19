@@ -57,7 +57,7 @@ include_directories(src/threadx/common/inc)
 include_directories(src/threadx/ports/inc)
 
 # add source files
-file(GLOB_RECURSE SOURCES "src/*.[c|s|S]" "src/plugins/*.*" "env/startup_stm32f401rctx.s")
+file(GLOB_RECURSE SOURCES "src/*.[c|s|S]" "src/plugins/*.*")
 foreach(var ${SOURCES})
     message("SOURCES = ${var}")
 endforeach()
