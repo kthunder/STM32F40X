@@ -30,7 +30,7 @@ if /i "%~1"=="download" (
     echo build
     cmake --build build -j12
     echo download
-    openocd.exe -f "./env/stm32f4discovery.cfg" -c "program ./build/%ProjectName%.elf" -c reset -c shutdown
+    C:/ENV/EmbeddedToolChain/OpenOCD/bin/openocd.exe -f "./env/stm32f4discovery.cfg" -c "program ./build/%ProjectName%.elf" -c reset -c shutdown
 ) else if /i "%~1"=="debug" (
     echo debug
 ) else if /i "%~1"=="build" (

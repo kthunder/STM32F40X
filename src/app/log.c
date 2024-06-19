@@ -47,7 +47,7 @@ static const char *level_strings[] = {
     "TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"};
 
 #ifdef LOG_USE_COLOR
-#include "SEGGER_RTT.h"
+// #include "SEGGER_RTT.h"
 // #define RTT_CTRL_TEXT_BLACK           "\x1B[2;30m"
 // #define RTT_CTRL_TEXT_RED             "\x1B[2;31m"
 // #define RTT_CTRL_TEXT_GREEN           "\x1B[2;32m"
@@ -57,8 +57,8 @@ static const char *level_strings[] = {
 // #define RTT_CTRL_TEXT_CYAN            "\x1B[2;36m"
 // #define RTT_CTRL_TEXT_WHITE           "\x1B[2;37m"
 static const char *level_colors[] = {
-    RTT_CTRL_TEXT_WHITE, "\x1b[36m", RTT_CTRL_TEXT_GREEN, "\x1b[33m", "\x1b[31m", RTT_CTRL_TEXT_RED
-    // "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[35m"
+    // RTT_CTRL_TEXT_WHITE, "\x1b[36m", RTT_CTRL_TEXT_GREEN, "\x1b[33m", "\x1b[31m", RTT_CTRL_TEXT_RED
+    "\x1b[94m", "\x1b[36m", "\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[35m"
     };
 #endif
 

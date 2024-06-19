@@ -50,7 +50,6 @@ project(${PROJECT_DIR} C ASM)
 set(CMAKE_C_STANDARD 99)
 # add header files
 include_directories(src/app/Inc)
-include_directories(src/Core/RTT)
 include_directories(src/Drivers/CMSIS/Device/ST/STM32F1xx/Include)
 include_directories(src/Drivers/CMSIS/Include)
 include_directories(src/Drivers/HAL_Driver/Inc)
@@ -58,19 +57,19 @@ include_directories(src/threadx/common/inc)
 include_directories(src/threadx/ports/inc)
 
 # add source files
-file(GLOB_RECURSE SOURCES "src/*.*" "src/plugins/*.*" )
-# foreach(var ${SOURCES})
-#     message("SOURCES = ${var}")
-# endforeach()
+file(GLOB_RECURSE SOURCES "src/*.[c|s|S]" "src/plugins/*.*" "env/startup_stm32f401rctx.s")
+foreach(var ${SOURCES})
+    message("SOURCES = ${var}")
+endforeach()
 # exclued source files
-file(GLOB_RECURSE EXCLUDE_SOURCES )
+file(GLOB_RECURSE EXCLUDE_SOURCES)
 list(REMOVE_ITEM SOURCES ${EXCLUDE_SOURCES})
 
 # add definitions
 add_definitions(-DSTM32F401xC)
 
 #Uncomment for hardware floating point
-#add_compile_definitions(ARM_MATH_CM4;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING)
+# add_compile_definitions(ARM_MATH_CM4;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING)
 add_compile_options(-mfloat-abi=hard -mfpu=fpv5-d16)
 add_link_options(-mfloat-abi=hard -mfpu=fpv5-d16)
  
@@ -106,7 +105,7 @@ add_compile_options($<$<COMPILE_LANGUAGE:ASM>:-x$<SEMICOLON>assembler-with-cpp>)
 add_compile_options(-O0 -g)
 
 # set linker file
-set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/env/threadx_port.ld)
+set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/env/STM32F401RCTX_FLASH.ld)
 add_link_options(-march=${ARCH})
 add_link_options(-mcpu=${CPU})
 add_link_options(-mthumb)
