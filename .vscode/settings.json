@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.h": "c",
+        "*.c": "c",
+        "*.makefile": "makefile"
+    },
+    // "terminal.integrated.defaultProfile.windows": "Git Bash",
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools",
+    "cortex-debug.openocdPath": "C:/ENV/EmbeddedToolChain/OpenOCD/bin/openocd.exe",
+    "cortex-debug.variableUseNaturalFormat": false,
+}
