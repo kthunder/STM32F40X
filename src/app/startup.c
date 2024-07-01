@@ -7,7 +7,7 @@ __WEAK void Default_Handler(void)
     __ASM("b .");
 }
 
-#define FUNC_ALIAS(func_from, func_to) __WEAK void func_to(void) __attribute__((alias(#func_from)))
+#define FUNC_ALIAS(func_from, func_to) void func_to(void) __attribute__((alias(#func_from), weak))
 
 FUNC_ALIAS(Default_Handler, NMI_Handler);
 FUNC_ALIAS(Default_Handler, HardFault_Handler);
