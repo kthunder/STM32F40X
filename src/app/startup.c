@@ -2,77 +2,78 @@
 #include <stdio.h>
 #define SECTION_DATA(sec) __attribute__((section(sec)))
 
-#define IRQ_Handler(name)  \
-    __WEAK void name(void) \
-    {                      \
-        __ASM("b .");      \
-    }
+__WEAK void Default_Handler(void)
+{
+    __ASM("b .");
+}
 
-IRQ_Handler(NMI_Handler);
-IRQ_Handler(HardFault_Handler);
-IRQ_Handler(MemManage_Handler);
-IRQ_Handler(BusFault_Handler);
-IRQ_Handler(UsageFault_Handler);
-IRQ_Handler(SVC_Handler);
-IRQ_Handler(DebugMon_Handler);
-IRQ_Handler(PendSV_Handler);
-IRQ_Handler(SysTick_Handler);
-IRQ_Handler(WWDG_IRQHandler);
-IRQ_Handler(PVD_IRQHandler);
-IRQ_Handler(TAMP_STAMP_IRQHandler);
-IRQ_Handler(RTC_WKUP_IRQHandler);
-IRQ_Handler(FLASH_IRQHandler);
-IRQ_Handler(RCC_IRQHandler);
-IRQ_Handler(EXTI0_IRQHandler);
-IRQ_Handler(EXTI1_IRQHandler);
-IRQ_Handler(EXTI2_IRQHandler);
-IRQ_Handler(EXTI3_IRQHandler);
-IRQ_Handler(EXTI4_IRQHandler);
-IRQ_Handler(DMA1_Stream0_IRQHandler);
-IRQ_Handler(DMA1_Stream1_IRQHandler);
-IRQ_Handler(DMA1_Stream2_IRQHandler);
-IRQ_Handler(DMA1_Stream3_IRQHandler);
-IRQ_Handler(DMA1_Stream4_IRQHandler);
-IRQ_Handler(DMA1_Stream5_IRQHandler);
-IRQ_Handler(DMA1_Stream6_IRQHandler);
-IRQ_Handler(ADC_IRQHandler);
-IRQ_Handler(EXTI9_5_IRQHandler);
-IRQ_Handler(TIM1_BRK_TIM9_IRQHandler);
-IRQ_Handler(TIM1_UP_TIM10_IRQHandler);
-IRQ_Handler(TIM1_TRG_COM_TIM11_IRQHandler);
-IRQ_Handler(TIM1_CC_IRQHandler);
-IRQ_Handler(TIM2_IRQHandler);
-IRQ_Handler(TIM3_IRQHandler);
-IRQ_Handler(TIM4_IRQHandler);
-IRQ_Handler(I2C1_EV_IRQHandler);
-IRQ_Handler(I2C1_ER_IRQHandler);
-IRQ_Handler(I2C2_EV_IRQHandler);
-IRQ_Handler(I2C2_ER_IRQHandler);
-IRQ_Handler(SPI1_IRQHandler);
-IRQ_Handler(SPI2_IRQHandler);
-IRQ_Handler(USART1_IRQHandler);
-IRQ_Handler(USART2_IRQHandler);
-IRQ_Handler(EXTI15_10_IRQHandler);
-IRQ_Handler(RTC_Alarm_IRQHandler);
-IRQ_Handler(OTG_FS_WKUP_IRQHandler);
-IRQ_Handler(DMA1_Stream7_IRQHandler);
-IRQ_Handler(SDIO_IRQHandler);
-IRQ_Handler(TIM5_IRQHandler);
-IRQ_Handler(SPI3_IRQHandler);
-IRQ_Handler(DMA2_Stream0_IRQHandler);
-IRQ_Handler(DMA2_Stream1_IRQHandler);
-IRQ_Handler(DMA2_Stream2_IRQHandler);
-IRQ_Handler(DMA2_Stream3_IRQHandler);
-IRQ_Handler(DMA2_Stream4_IRQHandler);
-IRQ_Handler(OTG_FS_IRQHandler);
-IRQ_Handler(DMA2_Stream5_IRQHandler);
-IRQ_Handler(DMA2_Stream6_IRQHandler);
-IRQ_Handler(DMA2_Stream7_IRQHandler);
-IRQ_Handler(USART6_IRQHandler);
-IRQ_Handler(I2C3_EV_IRQHandler);
-IRQ_Handler(I2C3_ER_IRQHandler);
-IRQ_Handler(FPU_IRQHandler);
-IRQ_Handler(SPI4_IRQHandler);
+#define FUNC_ALIAS(func_from, func_to) __WEAK void func_to(void) __attribute__((alias(#func_from)))
+
+FUNC_ALIAS(Default_Handler, NMI_Handler);
+FUNC_ALIAS(Default_Handler, HardFault_Handler);
+FUNC_ALIAS(Default_Handler, MemManage_Handler);
+FUNC_ALIAS(Default_Handler, BusFault_Handler);
+FUNC_ALIAS(Default_Handler, UsageFault_Handler);
+FUNC_ALIAS(Default_Handler, SVC_Handler);
+FUNC_ALIAS(Default_Handler, DebugMon_Handler);
+FUNC_ALIAS(Default_Handler, PendSV_Handler);
+FUNC_ALIAS(Default_Handler, SysTick_Handler);
+FUNC_ALIAS(Default_Handler, WWDG_IRQHandler);
+FUNC_ALIAS(Default_Handler, PVD_IRQHandler);
+FUNC_ALIAS(Default_Handler, TAMP_STAMP_IRQHandler);
+FUNC_ALIAS(Default_Handler, RTC_WKUP_IRQHandler);
+FUNC_ALIAS(Default_Handler, FLASH_IRQHandler);
+FUNC_ALIAS(Default_Handler, RCC_IRQHandler);
+FUNC_ALIAS(Default_Handler, EXTI0_IRQHandler);
+FUNC_ALIAS(Default_Handler, EXTI1_IRQHandler);
+FUNC_ALIAS(Default_Handler, EXTI2_IRQHandler);
+FUNC_ALIAS(Default_Handler, EXTI3_IRQHandler);
+FUNC_ALIAS(Default_Handler, EXTI4_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA1_Stream0_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA1_Stream1_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA1_Stream2_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA1_Stream3_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA1_Stream4_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA1_Stream5_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA1_Stream6_IRQHandler);
+FUNC_ALIAS(Default_Handler, ADC_IRQHandler);
+FUNC_ALIAS(Default_Handler, EXTI9_5_IRQHandler);
+FUNC_ALIAS(Default_Handler, TIM1_BRK_TIM9_IRQHandler);
+FUNC_ALIAS(Default_Handler, TIM1_UP_TIM10_IRQHandler);
+FUNC_ALIAS(Default_Handler, TIM1_TRG_COM_TIM11_IRQHandler);
+FUNC_ALIAS(Default_Handler, TIM1_CC_IRQHandler);
+FUNC_ALIAS(Default_Handler, TIM2_IRQHandler);
+FUNC_ALIAS(Default_Handler, TIM3_IRQHandler);
+FUNC_ALIAS(Default_Handler, TIM4_IRQHandler);
+FUNC_ALIAS(Default_Handler, I2C1_EV_IRQHandler);
+FUNC_ALIAS(Default_Handler, I2C1_ER_IRQHandler);
+FUNC_ALIAS(Default_Handler, I2C2_EV_IRQHandler);
+FUNC_ALIAS(Default_Handler, I2C2_ER_IRQHandler);
+FUNC_ALIAS(Default_Handler, SPI1_IRQHandler);
+FUNC_ALIAS(Default_Handler, SPI2_IRQHandler);
+FUNC_ALIAS(Default_Handler, USART1_IRQHandler);
+FUNC_ALIAS(Default_Handler, USART2_IRQHandler);
+FUNC_ALIAS(Default_Handler, EXTI15_10_IRQHandler);
+FUNC_ALIAS(Default_Handler, RTC_Alarm_IRQHandler);
+FUNC_ALIAS(Default_Handler, OTG_FS_WKUP_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA1_Stream7_IRQHandler);
+FUNC_ALIAS(Default_Handler, SDIO_IRQHandler);
+FUNC_ALIAS(Default_Handler, TIM5_IRQHandler);
+FUNC_ALIAS(Default_Handler, SPI3_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA2_Stream0_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA2_Stream1_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA2_Stream2_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA2_Stream3_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA2_Stream4_IRQHandler);
+FUNC_ALIAS(Default_Handler, OTG_FS_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA2_Stream5_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA2_Stream6_IRQHandler);
+FUNC_ALIAS(Default_Handler, DMA2_Stream7_IRQHandler);
+FUNC_ALIAS(Default_Handler, USART6_IRQHandler);
+FUNC_ALIAS(Default_Handler, I2C3_EV_IRQHandler);
+FUNC_ALIAS(Default_Handler, I2C3_ER_IRQHandler);
+FUNC_ALIAS(Default_Handler, FPU_IRQHandler);
+FUNC_ALIAS(Default_Handler, SPI4_IRQHandler);
 
 extern uint8_t _estack[];
 extern uint8_t _sidata[];
