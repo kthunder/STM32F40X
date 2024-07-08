@@ -36,9 +36,12 @@
 
 extern int misc_init();
 
+extern void vTaskStartScheduler();
+
 int main()
 {
     misc_init();
+    vTaskStartScheduler();
     while (1)
     {
         GPIO_TogglePin(GPIOC, GPIO_Pin_13);

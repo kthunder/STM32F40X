@@ -125,14 +125,14 @@ void PendSV_Handler()
         :);
 }
 
-// void SysTick_Handler()
-// {
-//     portDIASBLE_INTERUPTS();
+void SysTick_Handler()
+{
+    portDIASBLE_INTERUPTS();
 
-//     xTaskIncremmentTick();
+    xTaskIncremmentTick();
 
-//     portENABLE_INTERUPTS();
-// }
+    portENABLE_INTERUPTS();
+}
 
 void prvStartFirstTask()
 {

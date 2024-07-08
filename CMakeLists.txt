@@ -53,6 +53,7 @@ include_directories(src/app/Inc)
 include_directories(src/Drivers/CMSIS/Device/ST/STM32F1xx/Include)
 include_directories(src/Drivers/CMSIS/Include)
 include_directories(src/Drivers/HAL_Driver/Inc)
+include_directories(src/Drivers/MinRTOS/Inc)
 include_directories(src/threadx/common/inc)
 include_directories(src/threadx/ports/inc)
 
