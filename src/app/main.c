@@ -41,10 +41,16 @@ extern void vTaskStartScheduler();
 int main()
 {
     misc_init();
-    vTaskStartScheduler();
+    // vTaskStartScheduler();
+    for (size_t i = 0; i < 0xFFFFFF; i++)
+            ;
+    GPIO_SetBits(GPIOC, GPIO_Pin_13);
+
     while (1)
     {
-        GPIO_TogglePin(GPIOC, GPIO_Pin_13);
+        // GPIO_TogglePin(GPIOC, GPIO_Pin_13);
+        
+        // GPIO_ResetBits(GPIOC, GPIO_Pin_13);
         // log_info("heart beat!");
         printf("heart beat!\n");
 

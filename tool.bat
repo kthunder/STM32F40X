@@ -31,15 +31,15 @@ if /i "%~1"=="download" (
     echo build
     cmake --build build -j12
     echo download
-    @REM C:/ENV/EmbeddedToolChain/OpenOCD/bin/openocd.exe -f "./env/stm32f4discovery.cfg" -c "program ./build/%ProjectName%.elf" -c reset -c shutdown
-    C:/ENV/EmbeddedToolChain/OpenOCD/bin/openocd.exe -f "./env/stm32f4discovery.cfg"
+    C:/ENV/EmbeddedToolChain/OpenOCD/bin/openocd.exe -f "./env/stm32f4discovery.cfg" -c "program ./build/%ProjectName%.elf" -c reset -c shutdown
+    @REM C:/ENV/EmbeddedToolChain/OpenOCD/bin/openocd.exe -f "./env/stm32f4discovery.cfg"
 ) else if /i "%~1"=="debug" (
     echo debug
 ) else if /i "%~1"=="build" (
     echo build
     cmake --build build -j12
 ) else (
-    C:/ENV/EmbeddedToolChain/OpenOCD/bin/openocd.exe -f "./env/stm32f4discovery.cfg"
+    @REM C:/ENV/EmbeddedToolChain/OpenOCD/bin/openocd.exe -f "./env/stm32f4discovery.cfg"
     echo unknown arg: %~1
 )
 
