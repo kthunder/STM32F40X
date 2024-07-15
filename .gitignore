@@ -4,6 +4,7 @@
 .cache/
 build/
 deps/
+test/test.*
 compile_commands.json
 
 # BIN
