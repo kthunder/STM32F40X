@@ -27,7 +27,7 @@ __attribute__((weak)) int __io_putchar(char ch, FILE *file)
 }
 
 //only for llvm
-#if defined(__clang_major__)&&(__clang_major__ == 17)
+#if defined(__clang_major__)&&(__clang_major__ == 19)
 /* Redirect sdtio as per https://github.com/picolibc/picolibc/blob/main/doc/os.md */
 static FILE __stdio = FDEV_SETUP_STREAM(__io_putchar, __io_getchar, NULL, _FDEV_SETUP_RW);
 FILE *const stdin = &__stdio;
@@ -38,7 +38,6 @@ __strong_reference(stdin, stderr);
 
 #ifdef __GNUC__
 char *__env[1] = {0};
-char **environ = __env;
 
 #ifndef __clang__
 #define FUNC_PREFIX(string) _##string
